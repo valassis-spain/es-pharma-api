@@ -1,0 +1,36 @@
+{
+  "name": "es-pharma-api",
+  "version": "1.0.0",
+  "description": "ES Pharma API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/valassis-spain/es-pharma-api.git"
+  },
+  "keywords": [
+    "Pharma",
+    "API"
+  ],
+  "author": "Savi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/valassis-spain/es-pharma-api/issues"
+  },
+  "homepage": "https://github.com/valassis-spain/es-pharma-api#readme",
+  "devDependencies": {
+    "eslint": "^8.21.0"
+  },
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "fs": "^0.0.1-security",
+    "jsonwebtoken": "^8.5.1",
+    "mssql": "^8.1.2",
+    "path": "^0.12.7",
+    "winston": "^3.8.1"
+  }
+}
