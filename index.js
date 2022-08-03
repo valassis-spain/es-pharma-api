@@ -14,9 +14,11 @@ app.use(express.json());
 // routes
 var indexRouter = require('./routes/index');
 var loginRouter = require('./routes/login');
+var tokenRouter = require('./routes/token');
 
-app.use('/', indexRouter);
-app.use('/authenticate', loginRouter);
+app.use('/api/authenticate', loginRouter);
+app.use('/api/token', tokenRouter);
+app.use('/api/', indexRouter);
 
 // errors handler
 app.use(function(err, req, res, next) {
