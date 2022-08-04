@@ -57,7 +57,9 @@ router.post('/', async (req, res) => {
     }
 
     accessClaim[process.env.ACCESS_CLAIM]=true;
+    accessClaim['sub']=username
     refreshClaim[process.env.REFRESH_CLAIM]=true;
+    refreshClaim['sub']=username
 
     const access_token = issueAccessToken(accessClaim);
     const refresh_token = issueRefreshToken(refreshClaim);
