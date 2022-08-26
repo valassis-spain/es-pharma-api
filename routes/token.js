@@ -1,15 +1,15 @@
 const {Router} = require('express');
-const {logger} = require("../config");
+const {logger} = require('../config');
 const router = Router();
 
 const {verifyToken, issueAccessToken, issueRefreshToken} = require('../lib/jwt');
 
 router.get('/verify', async (req, res) => {
-  let resStatus = 200;
+  const resStatus = 200;
 
-  const {access_token} = req.query
+  const {access_token} = req.query;
 
-  logger.info(`Token Verify requested`);
+  logger.info('Token Verify requested');
 
   try {
     const verified = verifyToken(access_token);
@@ -17,20 +17,21 @@ router.get('/verify', async (req, res) => {
 
     res.json(
       verified
-    )
+    );
   }
   catch (e) {
     logger.error(e.stack);
     res.status(resStatus === 200 ? 500 : resStatus).json({message: `Token verify error [${e.message}]`});
   }
-})
+});
 
 router.post('/refresh', async (req, res) => {
   let resStatus = 200;
+
   try {
     const {refresh_token} = req.body;
 
-    logger.info(`Token Refresh requested`);
+    logger.info('Token Refresh requested');
 
     if (!refresh_token) {
       resStatus = 403;
@@ -45,8 +46,8 @@ router.post('/refresh', async (req, res) => {
       throw new Error('Not a refresh token!');
     }
 
-    delete(verified['exp']) // expired
-    delete(verified['iss']) // issuer
+    delete(verified['exp']); // expired
+    delete(verified['iss']); // issuer
 
     verified[process.env.ACCESS_CLAIM] = true;
     delete (verified[process.env.REFRESH_CLAIM]);
@@ -61,7 +62,7 @@ router.post('/refresh', async (req, res) => {
     res.json(
       {
         access_token: access_token,
-        refresh_token: new_refresh_token,
+        refresh_token: new_refresh_token
       }
     );
   }
@@ -69,6 +70,6 @@ router.post('/refresh', async (req, res) => {
     console.error(e.stack);
     res.status(resStatus === 200 ? 500 : resStatus).json({message: `Token refresh error [${e.message}]`});
   }
-})
+});
 
 module.exports = router;
