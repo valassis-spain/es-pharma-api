@@ -23,7 +23,7 @@ app.use('/api/authenticate', function(req, res, next) {
   next();
 }, loginRouter);
 
-app.use('/api/deleg/*',function(req, res, next) {
+app.use('/api/deleg/*', function(req, res, next) {
   console.log('Request URL:', req.originalUrl);
   req.body.origin = process.env.ORIGIN_DELEGADO;
   next();
