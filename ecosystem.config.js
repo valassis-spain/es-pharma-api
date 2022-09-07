@@ -1,7 +1,7 @@
 module.exports = {
   apps : [{
     name: 'es-pharma-api',
-    script: 'index',
+    script: 'index.js',
     env: {
       NODE_ENV: 'development'
     },
