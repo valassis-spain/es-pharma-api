@@ -14,33 +14,81 @@ app.use(express.json());
 // routes
 var indexRouter = require('./routes/index');
 var loginRouter = require('./routes/login');
-var tokenRouter = require('./routes/token');
-var delegadoRouter = require('./routes/delegado');
+var tokenRouter = require('./routes/tokenRoute');
+var delegadoRouter = require('./routes/delegadoRoute');
+var pointOfSaleRouter = require('./routes/pointOfSaleRoute');
+var userRouter = require('./routes/userRoute');
 
-app.use('/api/authenticate', function(req, res, next) {
-  console.log('Request URL:', req.originalUrl);
+
+app.use('*', function(req, res, next) {
+  logger.info(`Request URL: ${req.method} ${req.originalUrl}`);
+  next();
+});
+
+// detect origin
+app.use('/api/*', function(req, res, next) {
   req.body.origin = process.env.ORIGIN_APP;
   next();
-}, loginRouter);
+});
+
 
 app.use('/api/deleg/*', function(req, res, next) {
-  console.log('Request URL:', req.originalUrl);
   req.body.origin = process.env.ORIGIN_DELEGADO;
   next();
 });
 
-app.use('/api/deleg/authenticate', loginRouter);
-app.use('/api/deleg/delegado', delegadoRouter);
-app.use('/api/token', tokenRouter);
+// do authentication
+app.use('/api/authenticate',  function(req, res, next) {
+  logger.debug('Router Login');
+  next();
+}, loginRouter);
+
+app.use('/api/deleg/authenticate',   function(req, res, next) {
+  logger.debug('Router Login');
+  next();
+}, loginRouter);
+
+// global actions before any call
+app.use('/api/*',   function(req, res, next) {
+  logger.debug('Router Index');
+  next();
+}, indexRouter);
+
+// Delegado's functionalities
+app.use('/api/deleg/delegado',   function(req, res, next) {
+  logger.debug('Router Delegado');
+  next();
+}, delegadoRouter);
+
+// Point of sale's functionalities
+app.use('/api/deleg/pos',   function(req, res, next) {
+  logger.debug('Router PointOfSale');
+  next();
+}, pointOfSaleRouter);
+
+// User's functionalities
+app.use('/api/user',   function(req, res, next) {
+  logger.debug('Router User');
+  next();
+}, userRouter);
+app.use('/api/deleg/user',   function(req, res, next) {
+  logger.debug('Router User');
+  next();
+}, userRouter);
+
+// JSON Web Token functionalities
+app.use('/api/token',   function(req, res, next) {
+  logger.debug('Router Token');
+  next();
+}, tokenRouter);
 
 // app.use('/api/promotions', promotionsRouter);
 // app.use('/api/ticket', ticketRouter);
 // app.use('/api/transactions', transactionsRouter);
-app.use('/api/', indexRouter);
 
 // errors handler
 app.use(function(err, req, res, next) {
-  console.error(err.stack);
+  logger.error(err.stack);
   res.status(500).json({message: err.message});
 });
 

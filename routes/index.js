@@ -1,31 +1,39 @@
 const {Router} = require('express');
 const {logger} = require('../config');
+const {verifyAccesToken} = require("../lib/jwt");
+
+const toolService = require('../services/toolService').create();
+
 const router = Router();
 
-// Raiz
-router.get('/', (req, res) => {
-  logger.info('main page');
+router.all('/', verifyAccesToken, function(req, res, next) {
+  logger.debug('Router Index');
 
-  res.json(
-    {
-      Title: 'Hola mundo usando rutas!'
-    }
-  );
+  const token = req.pharmaApiAccessToken;
+
+  if (req.pharmaApiError) {
+    toolService.registerAudit({
+      user_id: 52,
+      eventName: req.pharmaApiError.name,
+      eventType: 'READ',
+      tableName: 'USERS',
+      rowId: 0,
+      data: req.pharmaApiError.message
+    });
+
+    res.status(401).json({error: req.pharmaApiError.name});
+  }
+  else {
+    toolService.registerAudit({
+      user_id: token.idUser,
+      eventName: 'Access Token valid',
+      eventType: 'READ',
+      tableName: 'USERS',
+      rowId: token.idUser,
+      data: token.sub
+    });
+
+    next();
+  }
 });
-
-router.get('/test', function(req, res) {
-  logger.info('main page TEST');
-  res.json({mensaje: '¡Test!'});
-});
-
-router.post('/', function(req, res) {
-  logger.info('main page');
-  res.json({mensaje: 'Método post'});
-});
-
-router.delete('/', function(req, res) {
-  logger.info('main page');
-  res.json({mensaje: 'Método delete'});
-});
-
 module.exports = router;

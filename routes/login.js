@@ -3,7 +3,11 @@ const {logger} = require('../config');
 const router = Router();
 const mssqlDb = require('../lib/mssqldb').create();
 
+const userService = require('../services/userService').create();
+
 const {verifyToken, issueAccessToken, issueRefreshToken} = require('../lib/jwt');
+const delegadoService = require("../services/delegadoService").create();
+const toolService = require("../services/toolService").create();
 
 const message01 = 'Invalid credentials!';
 const message02 = 'Incorrect user or password!';
@@ -23,7 +27,7 @@ router.post('/', async (req, res) => {
       resStatus = 403;
       logger.debug('No username or password received');
 
-      await mssqlDb.registerAudit({
+      toolService.registerAudit({
         user_id: 52,
         eventName: 'login failed',
         eventType: 'READ',
@@ -35,13 +39,13 @@ router.post('/', async (req, res) => {
       throw new Error(message01 + ' (L1)');
     }
 
-    const mapping = await mssqlDb.launchQuery('transaction', `select us.idUser, us.sUsername, us.sPassword, us.id_pos, us.enabled, us.account_Expired, us.account_Locked, us.password_Expired, pos.category from users us left join PS_DIM_POINT_OF_SALE pos on pos.id_pos = us.id_pos where us.sUsername = '${username}'`);
+    const mapping = await userService.getUserByUsername({idUser:0,sub:username}, username);
 
     if (mapping.length !== 1) {
       resStatus = 403;
       logger.debug(`User not Found [${mapping.length} of ${username}]`);
 
-      await mssqlDb.registerAudit({
+      toolService.registerAudit({
         user_id: 52,
         eventName: 'login failed',
         eventType: 'READ',
@@ -59,7 +63,7 @@ router.post('/', async (req, res) => {
       resStatus = 403;
       logger.debug(`Password not match [${username}]`);
 
-      await mssqlDb.registerAudit({
+      toolService.registerAudit({
         user_id: mapping[0].idUser,
         eventName: 'login failed',
         eventType: 'READ',
@@ -76,7 +80,7 @@ router.post('/', async (req, res) => {
       resStatus = 403;
       logger.debug(`disabled user [${username}]`);
 
-      await mssqlDb.registerAudit({
+      toolService.registerAudit({
         user_id: mapping[0].idUser,
         eventName: 'login failed',
         eventType: 'READ',
@@ -89,12 +93,12 @@ router.post('/', async (req, res) => {
     }
 
     // test origin
-    const isMemberOf = await mssqlDb.memberOf(origin, username);
+    const isMemberOf = await userService.memberOf({idUser:mapping[0].idUser,sub:username}, origin, username);
 
-    if (origin === process.env.ORIGIN_APP && !(isMemberOf.user || isMemberOf.admin)) {
+    if (origin === process.env.ORIGIN_APP && !(isMemberOf.ROLE_USER || isMemberOf.ROLE_ADMIN)) {
       logger.debug(`User is not Pharma [${username}]`);
 
-      await mssqlDb.registerAudit({
+      toolService.registerAudit({
         user_id: mapping[0].idUser,
         eventName: 'login failed',
         eventType: 'READ',
@@ -104,11 +108,11 @@ router.post('/', async (req, res) => {
       });
     }
 
-    if (origin === process.env.ORIGIN_DELEGADO && !(isMemberOf.delegado || isMemberOf.supervisor)) {
+    if (origin === process.env.ORIGIN_DELEGADO && !(isMemberOf.ROLE_DELEGADO || isMemberOf.ROLE_SUPERVISOR)) {
       resStatus = 403;
       logger.debug(`User is not Delegado [${username}]`);
 
-      await mssqlDb.registerAudit({
+      toolService.registerAudit({
         user_id: mapping[0].idUser,
         eventName: 'login failed',
         eventType: 'READ',
@@ -140,10 +144,12 @@ router.post('/', async (req, res) => {
     const access_token = issueAccessToken(accessClaim);
     const refresh_token = issueRefreshToken(refreshClaim);
 
+    const mappingManufacturers = await delegadoService.getMyManufacturers(accessClaim,mapping[0].idUser)
+
     const verified = verifyToken(access_token);
     logger.debug(`JWT verification: ${JSON.stringify(verified)}`);
 
-    mssqlDb.registerAudit({
+    toolService.registerAudit({
       user_id: mapping[0].idUser,
       eventName: 'login success',
       eventType: 'READ',
@@ -152,7 +158,7 @@ router.post('/', async (req, res) => {
       data: username
     });
 
-    mssqlDb.registerActivity({
+    toolService.registerActivity({
       user_id: mapping[0].idUser,
       idPos: mapping[0].id_pos,
       action: 'Login',
@@ -167,6 +173,7 @@ router.post('/', async (req, res) => {
         id_user: mapping[0].idUser,
         status: mapping[0].category,
         roles: isMemberOf.roles,
+        manufacturers: mappingManufacturers,
         access_token: access_token,
         refresh_token: refresh_token,
         country: ''
