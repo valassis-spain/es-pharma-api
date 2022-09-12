@@ -104,7 +104,7 @@ where up.REMOVED_AT is null
   return response;
 }
 
-pointOfSaleService.prototype.getPointOfSaleByPromotion = async function(token, idPromotion) {
+pointOfSaleService.prototype.getPointsOfSaleByPromotion = async function(token, idPromotion) {
   const response = await mssqlDb.launchQuery(`select * from PS_DIM_PROMOTION pdp
 join PS_DIM_BRAND pdb on pdp.ID_BRAND = pdb.ID_BRAND
          join PS_DIM_POS_PROMOTION pdpp on pdpp.ID_PROMOTION = pdp.ID_PROMOTION
@@ -182,25 +182,26 @@ values (${idDelegado},${idPos},current_timestamp,null);`)
 }
 
 pointOfSaleService.prototype.getPromotions = async function(token, idManufacturer, idPos) {
-  const response = await mssqlDb.launchQuery('transaction', `select * from PS_DIM_PROMOTION pdp
+  const response = await mssqlDb.launchQuery('transaction', `select pdp.ID_PROMOTION, pdp.PROMOTION_NAME, pdp.PROMOTION_REFERENCE,pdp.PROMOTION_END_DATE,pdp.PROMOTION_START_DATE, pdp.PROMOTION_POSTMARK_DATE, pdpp.ID_POS 
+from PS_DIM_PROMOTION pdp
 join PS_DIM_BRAND pdb on pdp.ID_BRAND = pdb.ID_BRAND
-         join PS_DIM_POS_PROMOTION pdpp on pdpp.ID_PROMOTION = pdp.ID_PROMOTION
+         left join PS_DIM_POS_PROMOTION pdpp on pdpp.ID_PROMOTION = pdp.ID_PROMOTION
 where pdb.ID_MANUFACTURER = ${idManufacturer}
-and pdpp.ID_POS = ${idPos}
+and (pdpp.ID_POS is null or pdpp.ID_POS = ${idPos})
 and pdp.PROMOTION_POSTMARK_DATE > dateadd(DAY, -30, current_timestamp)`);
 
   toolService.registerAudit({
     user_id: token.idUser,
-    eventName: 'get point of sale Promotions',
+    eventName: 'get Promotions',
     eventType: 'READ',
     tableName: 'PS_DIM_PROMOTIONS',
     rowId: idPos,
-    data: `Manufacturer ${idManufacturer}`
+    data: `Manufacturer ${idManufacturer} POS ${idPos}`
   });
 
   return response;
-
 }
+
 pointOfSaleService.prototype.getPointOfSale = async function(token, idPos) {
   const response =  await mssqlDb.launchQuery('transaction', `select 
 ID_POS, NAME, CIF, EMAIL, IBAN, PHONE, CELL_PHONE, CONTACT_PERSON, PAYMENT_MEAN,

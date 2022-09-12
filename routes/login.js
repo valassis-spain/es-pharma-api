@@ -39,7 +39,7 @@ router.post('/', async (req, res) => {
       throw new Error(message01 + ' (L1)');
     }
 
-    const mapping = await userService.getUserByUsername({idUser:0,sub:username}, username);
+    const mapping = await userService.getUserByUsername(null, username);
 
     if (mapping.length !== 1) {
       resStatus = 403;

@@ -14,12 +14,13 @@ left join PS_DIM_POINT_OF_SALE pos on pos.id_pos = us.id_pos
 left join SUPERVISOR sup on sup.id_user = us.idUser
 where us.sUsername = '${username}'`);
 
+  if ( token )
   toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'get user by username',
     eventType: 'READ',
     tableName: 'USERS',
-    rowId: `(select idUser from users where susername='${username})`,
+    rowId: `(select idUser from users where susername='${username}')`,
     data: token.sub
   });
 
@@ -157,7 +158,7 @@ where us.sUsername = '${username}'`);
     eventName: 'get user groups by username',
     eventType: 'READ',
     tableName: 'SUPERVISOR',
-    rowId: `(select idUser from users where susername='${username})`,
+    rowId: `(select idUser from users where susername='${username}')`,
     data: username
   });
 
