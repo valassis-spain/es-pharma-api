@@ -20,11 +20,11 @@ const {issueAccessToken, verifyAccesToken} = require('../lib/jwt');
  * @param next
  */
 let getUserInit = function(req, res, next) {
-  let {idDelegado} = req.query;
+  let {idDelegado} = req.body;
   const token = req.pharmaApiAccessToken;
 
   if (!idDelegado)
-    req.query.idDelegado = token.idUser;
+    req.body.idDelegado = token.idUser;
 
   next();
 };
@@ -37,7 +37,7 @@ let getUserInit = function(req, res, next) {
  * @returns {Promise<void>}
  */
 let getUser = async function(req, res, next) {
-  let {idDelegado} = req.query;
+  let {idDelegado} = req.body;
   const token = req.pharmaApiAccessToken;
 
   try {
@@ -78,7 +78,7 @@ let getUser = async function(req, res, next) {
  * @returns {Promise<void>}
  */
 let getDelegado = async function(req, res, next) {
-  let {idDelegado} = req.query;
+  let {idDelegado} = req.body;
   const token = req.pharmaApiAccessToken;
 
   try {
@@ -118,7 +118,7 @@ let getDelegado = async function(req, res, next) {
  * @param next
  */
 let verifyAuthorization = function(req, res, next) {
-  let {idDelegado} = req.query;
+  let {idDelegado} = req.body;
   const token = req.pharmaApiAccessToken;
   const mappingUser = req.locals.mappingUser;
 
@@ -141,12 +141,14 @@ let verifyAuthorization = function(req, res, next) {
   }
 }
 
-router.get('/read', getUserInit, getUser, verifyAuthorization, getDelegado, async function(req, res, next) {
+router.post('/read', getUserInit, getUser, verifyAuthorization, getDelegado, async function(req, res, next) {
   logger.info('Consulta delegado');
 
-  const {origin} = req.body;
-  let {idDelegado} = req.query;
+  const {origin,page} = req.body;
+  let {idDelegado} = req.body;
   const token = req.pharmaApiAccessToken;
+
+  const rowsOfPage = parseInt(process.env.SQL_FETCH_ROWS)
 
   try {
     // get my ROLES
@@ -158,7 +160,12 @@ router.get('/read', getUserInit, getUser, verifyAuthorization, getDelegado, asyn
     }
 
     // search my PdVs
-    req.locals.mappingDelegado.pos = await pointOfSaleService.getPointOfSaleByDelegado(token, token.idUser);
+    req.locals.mappingDelegado.pos = {
+      page: (page?page:0),
+      rowsOfPage: rowsOfPage,
+      totalRows: await pointOfSaleService.getRowsPointOfSaleByDelegado(token,token.idUser),
+      pointsOfSale: await pointOfSaleService.getPointOfSaleByDelegado(token, token.idUser)
+    };
 
     toolService.registerActivity({
       user_id: token.idUser,

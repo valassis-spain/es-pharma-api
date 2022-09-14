@@ -123,19 +123,21 @@ where pdpp.ID_PROMOTION = ${idPromotion}`)
   return response;
 }
 
-pointOfSaleService.prototype.getPointOfSaleByDelegado = async function(token, idDelegado) {
+pointOfSaleService.prototype.getPointOfSaleByDelegado = async function(token, idDelegado, pageNumber=1, rowsOfPage=0) {
   const response =  await mssqlDb.launchQuery('transaction', `select 
-ID_POS, NAME, CIF, EMAIL, IBAN, PHONE, CELL_PHONE, CONTACT_PERSON, PAYMENT_MEAN,
-MAILING_NOTIFICATION, MAIN_STREET, MAIN_CITY, MAIN_STATE, MAIN_ZIP_CODE,
+ID_POS, NAME, CIF, EMAIL, PHONE, CELL_PHONE, CONTACT_PERSON, MAILING_NOTIFICATION, MAIN_STREET, MAIN_CITY, MAIN_STATE, MAIN_ZIP_CODE,
 SHIPMENT_STREET, SHIPMENT_CITY, SHIPMENT_STATE, SHIPMENT_ZIP_CODE, POS_APP,
-CATEGORY, REMOTE_STORE_ID, COUNTRY 
+CATEGORY, REMOTE_STORE_ID, COUNTRY, ${pageNumber} PAGE, ${rowsOfPage} ROWS_OF_PAGE 
 from PS_DIM_POINT_OF_SALE
 where ID_POS in (select distinct(id_pos)
                  from USER_POS up
                  where up.id_user = ${idDelegado}
                     or up.ID_USER in (select SUPERVISOR.ID_USER
                                       from SUPERVISOR
-                                      where ID_SUPERVISOR = ${idDelegado}))`);
+                                      where ID_SUPERVISOR = ${idDelegado}))
+ORDER BY ID_POS 
+OFFSET (${pageNumber}-1)*${rowsOfPage} ROWS
+${rowsOfPage>0?`FETCH NEXT ${rowsOfPage} ROWS ONLY`:''}`);
 
   toolService.registerAudit({
     user_id: token.idUser,
@@ -147,6 +149,28 @@ where ID_POS in (select distinct(id_pos)
   });
 
   return response;
+}
+
+pointOfSaleService.prototype.getRowsPointOfSaleByDelegado = async function(token, idDelegado, pageNumber=1, rowsOfPage=0) {
+  const response =  await mssqlDb.launchQuery('transaction', `select count(*) 
+from PS_DIM_POINT_OF_SALE
+where ID_POS in (select distinct(id_pos)
+                 from USER_POS up
+                 where up.id_user = ${idDelegado}
+                    or up.ID_USER in (select SUPERVISOR.ID_USER
+                                      from SUPERVISOR
+                                      where ID_SUPERVISOR = ${idDelegado}))`);
+
+  toolService.registerAudit({
+    user_id: token.idUser,
+    eventName: 'get Number of points of sale by delegado',
+    eventType: 'READ',
+    tableName: 'PS_DIM_POINT_OF_SALE',
+    rowId: idDelegado,
+    data: token.sub
+  });
+
+  return response[0][''];
 }
 
 pointOfSaleService.prototype.updateLinkPointOfSaleToDelegado = async function(token, idDelegado, idPos) {
@@ -182,13 +206,19 @@ values (${idDelegado},${idPos},current_timestamp,null);`)
 }
 
 pointOfSaleService.prototype.getPromotions = async function(token, idManufacturer, idPos) {
-  const response = await mssqlDb.launchQuery('transaction', `select pdp.ID_PROMOTION, pdp.PROMOTION_NAME, pdp.PROMOTION_REFERENCE,pdp.PROMOTION_END_DATE,pdp.PROMOTION_START_DATE, pdp.PROMOTION_POSTMARK_DATE, pdpp.ID_POS 
+  const response = await mssqlDb.launchQuery('transaction', `select pdp.ID_PROMOTION
+     , pdp.PROMOTION_NAME
+     , pdp.PROMOTION_REFERENCE
+     , pdp.PROMOTION_END_DATE
+     , pdp.PROMOTION_START_DATE
+     , pdp.PROMOTION_POSTMARK_DATE
+     , (select pdpp.ID_POS
+        from PS_DIM_POS_PROMOTION pdpp
+        where pdpp.ID_PROMOTION = pdp.ID_PROMOTION and pdpp.ID_POS = ${idPos}) id_pos
 from PS_DIM_PROMOTION pdp
-join PS_DIM_BRAND pdb on pdp.ID_BRAND = pdb.ID_BRAND
-         left join PS_DIM_POS_PROMOTION pdpp on pdpp.ID_PROMOTION = pdp.ID_PROMOTION
+         left join PS_DIM_BRAND pdb on pdp.ID_BRAND = pdb.ID_BRAND
 where pdb.ID_MANUFACTURER = ${idManufacturer}
-and (pdpp.ID_POS is null or pdpp.ID_POS = ${idPos})
-and pdp.PROMOTION_POSTMARK_DATE > dateadd(DAY, -30, current_timestamp)`);
+  and pdp.PROMOTION_POSTMARK_DATE > dateadd(DAY, -30, current_timestamp)`);
 
   toolService.registerAudit({
     user_id: token.idUser,
