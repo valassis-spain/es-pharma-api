@@ -1,6 +1,6 @@
 const {Router} = require('express');
 const {logger} = require('../config');
-const {verifyAccesToken} = require("../lib/jwt");
+const {verifyAccesToken} = require('../lib/jwt');
 
 const toolService = require('../services/toolService').create();
 
@@ -36,4 +36,5 @@ router.all('/', verifyAccesToken, function(req, res, next) {
     next();
   }
 });
+
 module.exports = router;

@@ -1,5 +1,5 @@
 module.exports = {
-  apps : [{
+  apps: [{
     name: 'es-pharma-api',
     script: 'index.js',
     env: {
@@ -8,5 +8,5 @@ module.exports = {
     env_production: {
       NODE_ENV: 'production'
     }
-  }],
+  }]
 };

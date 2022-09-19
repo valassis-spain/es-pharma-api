@@ -1,12 +1,12 @@
-const {logger} = require('../config');
-const {issueAccessToken} = require("../lib/jwt");
-const mssqlDb = require('../lib/mssqldb').create();
+// const {logger} = require('../config');
+// const {issueAccessToken} = require('../lib/jwt');
+// const mssqlDb = require('../lib/mssqldb').create();
 
 const tokenService = function() {
 };
 
 tokenService.prototype.isUserPosLinked = async function(idUser, idPos) {
-}
+};
 
 exports.tokenService = tokenService;
 

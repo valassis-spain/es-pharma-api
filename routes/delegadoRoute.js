@@ -1,7 +1,7 @@
 const {Router} = require('express');
 const {logger} = require('../config');
 const router = Router();
-const mssqlDb = require('../lib/mssqldb').create();
+// const mssqlDb = require('../lib/mssqldb').create();
 
 // Services
 const delegadoService = require('../services/delegadoService').create();
@@ -10,17 +10,15 @@ const userService = require('../services/userService').create();
 const toolService = require('../services/toolService').create();
 
 // Middleware
-const {issueAccessToken, verifyAccesToken} = require('../lib/jwt');
+// const {verifyAccesToken} = require('../lib/jwt');
+const {issueAccessToken} = require('../lib/jwt');
 
-/**
+/*
  * El usuario por defecto será el recibido por parámetro
  * Si no se ha recibido parámetro, se usara el usuario del token
- * @param req
- * @param res
- * @param next
  */
-let getUserInit = function(req, res, next) {
-  let {idDelegado} = req.body;
+const getUserInit = function(req, res, next) {
+  const {idDelegado} = req.body;
   const token = req.pharmaApiAccessToken;
 
   if (!idDelegado)
@@ -29,19 +27,12 @@ let getUserInit = function(req, res, next) {
   next();
 };
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns {Promise<void>}
- */
-let getUser = async function(req, res, next) {
-  let {idDelegado} = req.body;
+const getUser = async function(req, res, next) {
+  const {idDelegado} = req.body;
   const token = req.pharmaApiAccessToken;
 
   try {
-    let mappingUser = await userService.getUserById(token, idDelegado);
+    const mappingUser = await userService.getUserById(token, idDelegado);
 
     if (mappingUser.length !== 1) {
       toolService.registerAudit({
@@ -59,7 +50,7 @@ let getUser = async function(req, res, next) {
     }
     else {
       req.locals = {mappingUser: mappingUser[0]};
-      next()
+      next();
     }
   }
   catch (e) {
@@ -68,21 +59,14 @@ let getUser = async function(req, res, next) {
 
     res.status(500).json({error: e.message});
   }
-}
+};
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @returns {Promise<void>}
- */
-let getDelegado = async function(req, res, next) {
-  let {idDelegado} = req.body;
+const getDelegado = async function(req, res, next) {
+  const {idDelegado} = req.body;
   const token = req.pharmaApiAccessToken;
 
   try {
-    const mappingDelegado = await userService.getUserDetailsById(token, idDelegado)
+    const mappingDelegado = await userService.getUserDetailsById(token, idDelegado);
 
     if (mappingDelegado.length !== 1) {
       toolService.registerAudit({
@@ -100,7 +84,7 @@ let getDelegado = async function(req, res, next) {
     }
     else {
       req.locals.mappingDelegado = mappingDelegado[0];
-      next()
+      next();
     }
   }
   catch (e) {
@@ -109,16 +93,10 @@ let getDelegado = async function(req, res, next) {
 
     res.status(500).json({error: e.message});
   }
-}
+};
 
-/**
- *
- * @param req
- * @param res
- * @param next
- */
-let verifyAuthorization = function(req, res, next) {
-  let {idDelegado} = req.body;
+const verifyAuthorization = function(req, res, next) {
+  const {idDelegado} = req.body;
   const token = req.pharmaApiAccessToken;
   const mappingUser = req.locals.mappingUser;
 
@@ -137,33 +115,32 @@ let verifyAuthorization = function(req, res, next) {
     res.status(401).json({error: 'Unauthorized'});
   }
   else {
-    next()
+    next();
   }
-}
+};
 
 router.post('/read', getUserInit, getUser, verifyAuthorization, getDelegado, async function(req, res, next) {
   logger.info('Consulta delegado');
 
-  const {origin,page} = req.body;
-  let {idDelegado} = req.body;
+  const {origin, page} = req.body;
+  // let {idDelegado} = req.body;
   const token = req.pharmaApiAccessToken;
 
-  const rowsOfPage = parseInt(process.env.SQL_FETCH_ROWS)
+  const rowsOfPage = parseInt(process.env.SQL_FETCH_ROWS);
 
   try {
     // get my ROLES
     const isMemberOf = await userService.memberOf(token, origin, token.sub);
 
     // if I am a SUPERVISOR, get my delegados
-    if (isMemberOf.ROLE_SUPERVISOR) {
+    if (isMemberOf.ROLE_SUPERVISOR)
       req.locals.mappingDelegado.delegados = await delegadoService.getMyDelegs(token, token.idUser);
-    }
 
     // search my PdVs
     req.locals.mappingDelegado.pos = {
-      page: (page?page:0),
+      page: (page ? page : 0),
       rowsOfPage: rowsOfPage,
-      totalRows: await pointOfSaleService.getRowsPointOfSaleByDelegado(token,token.idUser),
+      totalRows: await pointOfSaleService.getRowsPointOfSaleByDelegado(token, token.idUser),
       pointsOfSale: await pointOfSaleService.getPointOfSaleByDelegado(token, token.idUser)
     };
 
@@ -191,13 +168,13 @@ router.put('/update', async function(req, res) {
   logger.info('Update delegado (fase 2)');
 
   const {origin, name, phone, address, city, zipCode, state, country} = req.body;
-  let { idDelegado } = req.body;
+  let {idDelegado} = req.body;
 
   const token = req.pharmaApiAccessToken;
 
   if (!idDelegado) idDelegado = token.idUser;
 
-  const values = {}
+  const values = {};
   values.origin = origin;
   values.name = name;
   values.phone = phone;
@@ -231,14 +208,14 @@ router.put('/update', async function(req, res) {
 router.post('/promotions', async function(req, res) {
   logger.info('Get Promotions by manufacturer');
 
-  const {origin, idManufacturer } = req.body;
-  let { idDelegado } = req.body;
+  const {origin, idManufacturer} = req.body;
+  let {idDelegado} = req.body;
   const token = req.pharmaApiAccessToken;
 
   if (!idDelegado) idDelegado = token.idUser;
 
   try {
-    const promotions = await delegadoService.getMyPromotions(token, idManufacturer)
+    const promotions = await delegadoService.getMyPromotions(token, idManufacturer);
 
     toolService.registerActivity({
       user_id: token.idUser,
@@ -267,13 +244,14 @@ router.post('/promotions', async function(req, res) {
 router.post('/add', async function(req, res) {
   logger.info('Nuevo delegado (fase 2)');
 
-  const {origin, name, email, phone, address, city, zipCode, state, country} = req.body;
-  let { idDelegado } = req.body;
+  const {origin, name, phone, address, city, zipCode, state, country} = req.body;
+  // const {email} = req.body;
+  let {idDelegado} = req.body;
   const token = req.pharmaApiAccessToken;
 
   if (!idDelegado) idDelegado = token.idUser;
 
-  const values = {}
+  const values = {};
   values.origin = origin;
   values.name = name;
   values.phone = phone;
@@ -282,6 +260,7 @@ router.post('/add', async function(req, res) {
   values.zipCode = zipCode;
   values.state = state;
   values.country = country;
+
   try {
     await userService.createUserDetails(token, idDelegado, values);
 
@@ -301,7 +280,6 @@ router.post('/add', async function(req, res) {
     res.status(500).json({error: e.message});
   }
 });
-
 
 router.delete('/del/:idDelegado', async function(req, res) {
   logger.info('Baja delegado (fase 2)');
@@ -335,20 +313,21 @@ router.delete('/del/:idDelegado', async function(req, res) {
 router.post('/linkpos', async function(req, res) {
   logger.info('Asociar Punto de Venta a Delegado');
 
-  const {origin, name, email, phone, address, city, zipCode, state, country} = req.body;
+  const {origin} = req.body;
+  // const {name, email, phone, address, city, zipCode, state, country} = req.body;
   let {idDelegado, idPos} = req.body;
   const token = req.pharmaApiAccessToken;
 
-  if ( ! idDelegado ) idDelegado = token.idUser;
+  if (!idDelegado) idDelegado = token.idUser;
 
   try {
     // verify point of sale has delegado
     const posDelegados = await pointOfSaleService.getPointOfSaleDelegado(token, idPos);
 
-    if ( posDelegados.length === 0 ) {
+    if (posDelegados.length === 0) {
       // Point of Sale don't have delegado, create link
-      logger.info (`Point of sale don't have delegado [${idPos}]`)
-      await pointOfSaleService.createLinkPointOfSaleToDelegado(token, idDelegado, idPos )
+      logger.info(`Point of sale don't have delegado [${idPos}]`);
+      await pointOfSaleService.createLinkPointOfSaleToDelegado(token, idDelegado, idPos);
 
       toolService.registerActivity({
         user_id: token.idUser,
@@ -359,36 +338,35 @@ router.post('/linkpos', async function(req, res) {
 
       res.json({accessToken: issueAccessToken(token)});
     } // end if point of sale has delegado
-    else {
+    else if (posDelegados[0].ID_USER === idDelegado) {
       // point of sale has delegado
-      if ( posDelegados[0].ID_USER === idDelegado ) {
-        logger.info (`Point Of Sale is linked to Delegado [${idPos} with ${idDelegado}]`)
-      }
-      else if ( posDelegados[0].ID_SUPERVISOR === token.idUser ) {
-        // si es del mismo supervisor y es el usuario conectado, realizar el cambio
-        await pointOfSaleService.updateLinkPointOfSaleToDelegado(token, idDelegado, idPos);
 
-        toolService.registerActivity({
-          user_id: token.idUser,
-          idPos: idPos,
-          action: 'Update Link POS to Delegado',
-          origin: origin
-        });
+      logger.info(`Point Of Sale is linked to Delegado [${idPos} with ${idDelegado}]`);
+    }
+    else if (posDelegados[0].ID_SUPERVISOR === token.idUser) {
+      // si es del mismo supervisor y es el usuario conectado, realizar el cambio
+      await pointOfSaleService.updateLinkPointOfSaleToDelegado(token, idDelegado, idPos);
 
-        res.json({accessToken: issueAccessToken(token)});
-      } // end point of sale has delegado of same supervisor, update
-      else {
-        // point of sale has Delegado and it's not the same supervisor, reject
-        toolService.registerActivity({
-          user_id: token.idUser,
-          idPos: idPos,
-          action: 'REJECT Link POS to Delegado',
-          origin: origin
-        });
+      toolService.registerActivity({
+        user_id: token.idUser,
+        idPos: idPos,
+        action: 'Update Link POS to Delegado',
+        origin: origin
+      });
 
-        res.status(401).json({accessToken: issueAccessToken(token)});
-      } // end poit of sale has Delegado of other supervisor
-    } // end if Point of Sale has Delegado
+      res.json({accessToken: issueAccessToken(token)});
+    } // end point of sale has delegado of same supervisor, update
+    else {
+      // point of sale has Delegado and it's not the same supervisor, reject
+      toolService.registerActivity({
+        user_id: token.idUser,
+        idPos: idPos,
+        action: 'REJECT Link POS to Delegado',
+        origin: origin
+      });
+
+      res.status(401).json({accessToken: issueAccessToken(token)});
+    } // end poit of sale has Delegado of other supervisor
   }
   catch (e) {
     logger.error(e.message);

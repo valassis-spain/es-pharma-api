@@ -1,13 +1,13 @@
 const {Router} = require('express');
 const {logger} = require('../config');
 const router = Router();
-const mssqlDb = require('../lib/mssqldb').create();
+// const mssqlDb = require('../lib/mssqldb').create();
 
 const userService = require('../services/userService').create();
 
 const {verifyToken, issueAccessToken, issueRefreshToken} = require('../lib/jwt');
-const delegadoService = require("../services/delegadoService").create();
-const toolService = require("../services/toolService").create();
+const delegadoService = require('../services/delegadoService').create();
+const toolService = require('../services/toolService').create();
 
 const message01 = 'Invalid credentials!';
 const message02 = 'Incorrect user or password!';
@@ -93,7 +93,7 @@ router.post('/', async (req, res) => {
     }
 
     // test origin
-    const isMemberOf = await userService.memberOf({idUser:mapping[0].idUser,sub:username}, origin, username);
+    const isMemberOf = await userService.memberOf({idUser: mapping[0].idUser, sub: username}, origin, username);
 
     if (origin === process.env.ORIGIN_APP && !(isMemberOf.ROLE_USER || isMemberOf.ROLE_ADMIN)) {
       logger.debug(`User is not Pharma [${username}]`);
@@ -144,7 +144,7 @@ router.post('/', async (req, res) => {
     const access_token = issueAccessToken(accessClaim);
     const refresh_token = issueRefreshToken(refreshClaim);
 
-    const mappingManufacturers = await delegadoService.getMyManufacturers(accessClaim,mapping[0].idUser)
+    const mappingManufacturers = await delegadoService.getMyManufacturers(accessClaim, mapping[0].idUser);
 
     const verified = verifyToken(access_token);
     logger.debug(`JWT verification: ${JSON.stringify(verified)}`);

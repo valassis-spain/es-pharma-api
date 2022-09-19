@@ -71,6 +71,7 @@ app.use('/api/user',   function(req, res, next) {
   logger.debug('Router User');
   next();
 }, userRouter);
+
 app.use('/api/deleg/user',   function(req, res, next) {
   logger.debug('Router User');
   next();

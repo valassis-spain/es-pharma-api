@@ -1,5 +1,5 @@
 const {logger} = require('../config');
-const {issueAccessToken} = require("../lib/jwt");
+// const {issueAccessToken} = require('../lib/jwt');
 const mssqlDb = require('../lib/mssqldb').create();
 
 const toolService = function() {
@@ -38,6 +38,7 @@ toolService.prototype.registerActivity = async function(values = {}) {
     logger.error(e.stack);
   }
 };
+
 exports.toolService = toolService;
 
 exports.create = function() {
