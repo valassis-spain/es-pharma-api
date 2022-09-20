@@ -186,4 +186,60 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.post('/register', async function(req, res, next) {
+  logger.info('Registro delegado');
+
+  const {origin, email} = req.body;
+  let errors = false;
+  let mappingUser, mappingRoles
+
+  try {
+
+    if (!email) {
+      res.status(400).json({message:'missing required field email'});
+      errors = true;
+    }
+
+    if (!errors) {
+      mappingUser = await userService.getUserByUsername(null, email);
+      if ( !mappingUser || mappingUser.length !== 1 ) {
+        logger.error(`Found ${mappingUser.length} of ${email}`);
+        res.status(403).json({message:'username not found'});
+        errors = true;
+      }
+    }
+
+    if (!errors) {
+      mappingRoles = await userService.memberOf(null, origin, email);
+      if ( !mappingRoles || mappingRoles.length === 0 ) {
+        logger.error(`Found ${mappingRoles.length} of ${email}`);
+        res.status(403).json({message:'username has incorrect role'});
+        errors = true;
+      }
+      else if ( !mappingRoles.ROLE_DELEGADO && !mappingRoles.ROLE_SUPERVISOR ) {
+        logger.error(`Role not allowed ${email}`);
+        res.status(403).json({message:'username has incorrect role'});
+        errors = true;
+      }
+    }
+
+    if ( !errors ) {
+      if ( !mappingUser[0].enabled && mappingUser[0].account_Locked) {
+        res.status(200).json({message:'User accepted',code:0})
+      }
+      else if ( mappingUser[0].enabled && mappingUser[0].account_Locked) {
+        res.status(200).json({message:'User accepted',code:1})
+      }
+      else if ( mappingUser[0].enabled && !mappingUser[0].account_Locked) {
+        res.status(200).json({message:'User accepted',code:2})
+      }
+    }
+  }
+  catch (e) {
+    logger.error(`Error en el registro del delgado [${email}]`);
+    logger.error(e.stack);
+    res.status(500);
+  }
+});
+
 module.exports = router;

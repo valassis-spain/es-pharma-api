@@ -8,7 +8,7 @@ const userService = function() {
 
 userService.prototype.getUserByUsername = async function(token, username) {
   const response = await mssqlDb.launchQuery('transaction', `select 
-us.idUser, us.sUsername, us.sPassword, us.id_pos, us.enabled, us.account_Expired, us.account_Locked, us.password_Expired, pos.category 
+us.idUser, us.sUsername, us.sPassword, us.id_pos, us.enabled, us.account_Expired, us.account_Locked, us.password_Expired, pos.category, sup.id_supervisor 
 from users us 
 left join PS_DIM_POINT_OF_SALE pos on pos.id_pos = us.id_pos 
 left join SUPERVISOR sup on sup.id_user = us.idUser
@@ -155,14 +155,16 @@ from users us
     left join GROUPS g on ug.idGroup = g.idGroup
 where us.sUsername = '${username}'`);
 
-  toolService.registerAudit({
-    user_id: token.idUser,
-    eventName: 'get user groups by username',
-    eventType: 'READ',
-    tableName: 'SUPERVISOR',
-    rowId: `(select idUser from users where susername='${username}')`,
-    data: username
-  });
+  if (token) {
+    toolService.registerAudit({
+      user_id: token.idUser,
+      eventName: 'get user groups by username',
+      eventType: 'READ',
+      tableName: 'SUPERVISOR',
+      rowId: `(select idUser from users where susername='${username}')`,
+      data: username
+    });
+  }
 
   const memberOf = {
     roles: mappingGroups
