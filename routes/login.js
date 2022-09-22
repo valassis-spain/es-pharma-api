@@ -6,8 +6,10 @@ const router = Router();
 const userService = require('../services/userService').create();
 
 const {verifyToken, issueAccessToken, issueRefreshToken} = require('../lib/jwt');
+const {randomUUID} = require("crypto");
 const delegadoService = require('../services/delegadoService').create();
 const toolService = require('../services/toolService').create();
+const mailjetLib = require('../lib/mailjet').create();
 
 const message01 = 'Invalid credentials!';
 const message02 = 'Incorrect user or password!';
@@ -186,6 +188,193 @@ router.post('/', async (req, res) => {
   }
 });
 
+async function sendEmailCode(mappingUser, email, res, origin) {
+  // generate unique code
+  const { randomUUID } = require('crypto'); // Added in: node v14.17.0
+  let uuid = randomUUID();
+
+  const body = '' +
+    '<!-- CSS only -->\n' +
+    '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">' +
+    '<div>' +
+    'Hola,<br/>' +
+    '<br/>' +
+    '    Gracias por acceder a la APP para Delegados de *****.<br/>' +
+    '<br/>' +
+    '    Para completar el registro necesitamos la confirmación de tu dirección de correo electrónico.<br/>' +
+    '<br/>' +
+    '    Por favor, haz click en el botón para confirmar tu dirección:<br/>' +
+    '<br/>' +
+    '    <a class="btn btn-primary text-center" href="http://localhost:3010/api/deleg/authenticate/verifyCode?uuid='+uuid+'&email='+email+'">Verificar mi dirección</a> <br/>' +
+    '<br/>' +
+    '    Si tienes algún problema tienes nuestros datos de contacto en el pie de este correo.<br/>' +
+    '<br/>' +
+    '    Muchas gracias.<br/>' +
+    '<br/>' +
+    '</div>';
+
+  // send email with unique code
+  const mjResponse = await mailjetLib.sendEmail('fjperez@savispain.es', body);
+
+  if ( mjResponse && mjResponse.response.status === 200  ) {
+    // email sended successfully
+    // update user with unique code sended
+    const updateResp = await userService.updateUserWithCode(null, mappingUser[0].idUser, uuid);
+
+    logger.debug(`Mailjet Response: ${JSON.stringify(mjResponse.response.data.Messages,null,2)}`);
+
+    toolService.registerActivity({
+      user_id: mappingUser[0].idUser,
+      idPos: mappingUser[0].id_pos,
+      action: 'Register mail',
+      origin: origin
+    });
+
+    return true;
+  }
+  else {
+    logger.error(`Error sended register email`);
+
+    toolService.registerAudit({
+      user_id: mappingUser[0].idUser,
+      eventName: 'error sending email code ',
+      eventType: 'READ',
+      tableName: 'USERS_GROUPS',
+      rowId: mappingUser[0].idUser,
+      data: email
+    });
+
+    return false;
+  }
+}
+
+async function checkUserByEmail(email, res, origin) {
+  let mappingUser, mappingRoles, errors;
+  if (!email) {
+    res.status(400).json({message: 'missing required field email'});
+    errors = true;
+  }
+
+  if (!errors) {
+    mappingUser = await userService.getUserByUsername(null, email);
+    if (!mappingUser || mappingUser.length !== 1) {
+      logger.error(`Found ${mappingUser.length} of ${email}`);
+
+      toolService.registerAudit({
+        user_id: 52,
+        eventName: 'User by email error',
+        eventType: 'READ',
+        tableName: 'USERS',
+        rowId: 0,
+        data: email
+      });
+
+      res.status(403).json({message: 'username not found'});
+      errors = true;
+    }
+  }
+
+  if (!errors) {
+    mappingRoles = await userService.memberOf(null, origin, email);
+    if (!mappingRoles || mappingRoles.length === 0) {
+      logger.error(`Found ${mappingRoles.length} of ${email}`);
+
+      toolService.registerAudit({
+        user_id: mappingUser[0].idUser,
+        eventName: 'email receives hasn\'t roles',
+        eventType: 'READ',
+        tableName: 'USERS_GROUPS',
+        rowId: mappingUser[0].idUser,
+        data: email
+      });
+
+      res.status(403).json({message: 'username has incorrect role'});
+      errors = true;
+    }
+    else if (!mappingRoles.ROLE_DELEGADO && !mappingRoles.ROLE_SUPERVISOR) {
+      logger.error(`Role not allowed ${email}`);
+
+      toolService.registerAudit({
+        user_id: mappingUser[0].idUser,
+        eventName: 'email receives hasn\'t correct role',
+        eventType: 'READ',
+        tableName: 'USERS_GROUPS',
+        rowId: mappingUser[0].idUser,
+        data: email
+      });
+
+      res.status(403).json({message: 'username has incorrect role'});
+      errors = true;
+    }
+  }
+  return {errors, mappingUser};
+}
+
+router.post('/resendCode', async function(req, res, next) {
+  logger.info('Reenvio código verificación de delegado');
+  const {origin, email} = req.body;
+  let errors = false;
+  let mappingUser, mappingRoles
+
+  try {
+    const __ret = await checkUserByEmail(email, res, origin);
+    errors = __ret.errors;
+    mappingUser = __ret.mappingUser;
+
+    if ( !errors ) {
+      // if user don't still verified email account
+      if ( !mappingUser[0].enabled && mappingUser[0].account_Locked) {
+        let sendEmailResponse = await sendEmailCode(mappingUser, email, res, origin);
+
+        if ( sendEmailResponse ) {
+          toolService.registerActivity({
+            user_id: mappingUser[0].idUser,
+            idPos: mappingUser[0].id_pos,
+            action: 'Resend 0',
+            origin: origin
+          });
+          res.status(200).json({message: 'User accepted', code: 0})
+        }
+        else {
+          res.status(500).json({message:'Error sending email'});
+        }
+      }
+      else if ( mappingUser[0].enabled && mappingUser[0].account_Locked) {
+        // email code has been sended but not verified, resend email
+        let sendEmailResponse = await sendEmailCode(mappingUser, email, res, origin);
+
+        if ( sendEmailResponse ) {
+          toolService.registerActivity({
+            user_id: mappingUser[0].idUser,
+            idPos: mappingUser[0].id_pos,
+            action: 'Resend 1',
+            origin: origin
+          });
+          res.status(200).json({message: 'User accepted', code: 1})
+        }
+        else {
+          res.status(500).json({message:'Error sending email'});
+        }
+      }
+      else if ( mappingUser[0].enabled && !mappingUser[0].account_Locked) {
+        // access granted
+        toolService.registerActivity({
+          user_id: mappingUser[0].idUser,
+          idPos: mappingUser[0].id_pos,
+          action: 'Resend 2',
+          origin: origin
+        });
+        res.status(200).json({message:'User accepted',code:2})
+      }
+    }
+  }
+  catch (e) {
+    logger.error(`Error en el registro del delegado [${email}]`);
+    logger.error(e.stack);
+    res.status(500);
+  }
+});
+
 router.post('/register', async function(req, res, next) {
   logger.info('Registro delegado');
 
@@ -194,49 +383,153 @@ router.post('/register', async function(req, res, next) {
   let mappingUser, mappingRoles
 
   try {
-
-    if (!email) {
-      res.status(400).json({message:'missing required field email'});
-      errors = true;
-    }
-
-    if (!errors) {
-      mappingUser = await userService.getUserByUsername(null, email);
-      if ( !mappingUser || mappingUser.length !== 1 ) {
-        logger.error(`Found ${mappingUser.length} of ${email}`);
-        res.status(403).json({message:'username not found'});
-        errors = true;
-      }
-    }
-
-    if (!errors) {
-      mappingRoles = await userService.memberOf(null, origin, email);
-      if ( !mappingRoles || mappingRoles.length === 0 ) {
-        logger.error(`Found ${mappingRoles.length} of ${email}`);
-        res.status(403).json({message:'username has incorrect role'});
-        errors = true;
-      }
-      else if ( !mappingRoles.ROLE_DELEGADO && !mappingRoles.ROLE_SUPERVISOR ) {
-        logger.error(`Role not allowed ${email}`);
-        res.status(403).json({message:'username has incorrect role'});
-        errors = true;
-      }
-    }
+    const __ret = await checkUserByEmail(email, res, origin);
+    errors = __ret.errors;
+    mappingUser = __ret.mappingUser;
 
     if ( !errors ) {
+      // if user don't still verified email account
       if ( !mappingUser[0].enabled && mappingUser[0].account_Locked) {
+        await sendEmailCode(mappingUser, email, res, origin);
+        toolService.registerActivity({
+          user_id: mappingUser[0].idUser,
+          idPos: mappingUser[0].id_pos,
+          action: 'Register 0',
+          origin: origin
+        });
         res.status(200).json({message:'User accepted',code:0})
       }
       else if ( mappingUser[0].enabled && mappingUser[0].account_Locked) {
+        // email code has been sended but not verified
+        toolService.registerActivity({
+          user_id: mappingUser[0].idUser,
+          idPos: mappingUser[0].id_pos,
+          action: 'Register 1',
+          origin: origin
+        });
         res.status(200).json({message:'User accepted',code:1})
       }
       else if ( mappingUser[0].enabled && !mappingUser[0].account_Locked) {
-        res.status(200).json({message:'User accepted',code:2})
+        // access granted
+        toolService.registerActivity({
+          user_id: mappingUser[0].idUser,
+          idPos: mappingUser[0].id_pos,
+          action: 'Register 2',
+          origin: origin
+        });
+        res.status(200).json({message:'User accepted',code:2, idUser: mappingUser[0].idUser})
       }
     }
   }
   catch (e) {
-    logger.error(`Error en el registro del delgado [${email}]`);
+    logger.error(`Error en el registro del delegado [${email}]`);
+    logger.error(e.stack);
+    res.status(500);
+  }
+});
+
+router.get('/verifyCode', async function(req, res, next) {
+  logger.info('Registro delegado - verificación');
+
+  const {origin} = req.body;
+  const {email, uuid} = req.query;
+  let errors = false;
+  let mappingUser
+
+  try {
+    const __ret = await checkUserByEmail(email, res, origin);
+    errors = __ret.errors;
+    mappingUser = __ret.mappingUser;
+
+    if ( !errors && uuid !== mappingUser[0].sPassword) {
+      logger.error(`${email} UUID received and UUID saved are different`);
+      res.status(403).json({message: 'Error: code not match'});
+      toolService.registerAudit({
+        user_id: mappingUser[0].idUser,
+        eventName: 'email code received not match',
+        eventType: 'READ',
+        tableName: 'USERS',
+        rowId: mappingUser[0].idUser,
+        data: email
+      });
+      errors = true;
+    }
+
+    if ( !errors ) {
+      await userService.updateUserCodeVerified(null, mappingUser[0].idUser, uuid);
+
+      logger.info(`User ${email} verified with email code`)
+      toolService.registerActivity({
+        user_id: mappingUser[0].idUser,
+        idPos: mappingUser[0].id_pos,
+        action: 'Register V',
+        origin: origin
+      });
+
+      // todo: make a HTML beauty response
+      res.status(200).json({message:'code accepted'})
+    }
+  }
+  catch (e) {
+    logger.error(`Error en el registro del delegado [${email}]`);
+    logger.error(e.stack);
+    res.status(500);
+  }
+});
+
+router.post('/setpwd', async function(req, res, next) {
+  logger.info('delegado - establecer contraseña');
+
+  const {origin, idUser, email, pwd} = req.body;
+  let errors = false;
+  let mappingUser
+
+  try {
+    const __ret = await checkUserByEmail(email, res, origin);
+    errors = __ret.errors;
+    mappingUser = __ret.mappingUser;
+
+    // if ( !errors && idUser !== mappingUser[0].idUser ) {
+    //   logger.error(`${email} ID received and ID saved are different: ${idUser} <> ${mappingUser[0].idUser}`);
+    //   res.status(403).json({message: 'Error: id not match'});
+    //   toolService.registerAudit({
+    //     user_id: mappingUser[0].idUser,
+    //     eventName: 'set PWD: ids not match',
+    //     eventType: 'READ',
+    //     tableName: 'USERS',
+    //     rowId: mappingUser[0].idUser,
+    //     data: email
+    //   });
+    //   errors = true;
+    // }
+
+    if ( !errors ) {
+      const bcrypt = require('bcrypt');
+      let newPwd
+      await bcrypt.hash(pwd, 10, async function(err, hash) {
+        if ( !err ) {
+          await userService.updateUserPwd(null, mappingUser[0].idUser, hash);
+
+          logger.info(`User ${email} has new password`)
+          toolService.registerActivity({
+            user_id: mappingUser[0].idUser,
+            idPos: mappingUser[0].id_pos,
+            action: 'Set PWD',
+            origin: origin
+          });
+
+          res.status(200).json({message: 'password updated'})
+        }
+        else {
+          logger.error ( 'Error hashing password' )
+          logger.error ( err )
+          res.status(500);
+        }
+      });
+    }
+  }
+  catch (e) {
+    logger.error(`Error en el registro del delegado [${email}]`);
     logger.error(e.stack);
     res.status(500);
   }

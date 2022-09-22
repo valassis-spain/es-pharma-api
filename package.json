@@ -30,6 +30,7 @@
     "fs": "^0.0.1-security",
     "jsonwebtoken": "^8.5.1",
     "mssql": "^8.1.2",
+    "node-mailjet": "^5.1.1",
     "path": "^0.12.7",
     "winston": "^3.8.1"
   }

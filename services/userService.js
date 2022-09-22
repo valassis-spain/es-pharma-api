@@ -6,6 +6,90 @@ const toolService = require('./toolService').create();
 const userService = function() {
 };
 
+userService.prototype.updateUserWithCode = async function(token, idUser, uuid) {
+  const response = await mssqlDb.launchQuery('transaction', `update USERS set ENABLED=1, spassword='${uuid}' 
+where idUser=${idUser}`);
+
+  if (token) {
+    toolService.registerAudit({
+      user_id: token.idUser,
+      eventName: 'mark representative user with unique code',
+      eventType: 'UPDATE',
+      tableName: 'USERS',
+      rowId: idUser,
+      data: uuid
+    });
+  }
+  else {
+    toolService.registerAudit({
+      user_id: idUser,
+      eventName: 'mark representative user with unique code',
+      eventType: 'UPDATE',
+      tableName: 'USERS',
+      rowId: idUser,
+      data: uuid
+    });
+  }
+
+  return response;
+};
+
+userService.prototype.updateUserCodeVerified = async function(token, idUser, uuid) {
+  const response = await mssqlDb.launchQuery('transaction', `update USERS set account_Locked=0 
+where idUser=${idUser}`);
+
+  if (token) {
+    toolService.registerAudit({
+      user_id: token.idUser,
+      eventName: 'representative email verified',
+      eventType: 'UPDATE',
+      tableName: 'USERS',
+      rowId: idUser,
+      data: uuid
+    });
+  }
+  else {
+    toolService.registerAudit({
+      user_id: idUser,
+      eventName: 'representative email verified',
+      eventType: 'UPDATE',
+      tableName: 'USERS',
+      rowId: idUser,
+      data: uuid
+    });
+  }
+
+  return response;
+};
+
+userService.prototype.updateUserPwd = async function(token, idUser, pwd) {
+  const response = await mssqlDb.launchQuery('transaction', `update USERS set sPassword='${pwd}' 
+where idUser=${idUser}`);
+
+  if (token) {
+    toolService.registerAudit({
+      user_id: token.idUser,
+      eventName: 'representative set password',
+      eventType: 'UPDATE',
+      tableName: 'USERS',
+      rowId: idUser,
+      data: ''
+    });
+  }
+  else {
+    toolService.registerAudit({
+      user_id: idUser,
+      eventName: 'representative set password',
+      eventType: 'UPDATE',
+      tableName: 'USERS',
+      rowId: idUser,
+      data: ''
+    });
+  }
+
+  return response;
+};
+
 userService.prototype.getUserByUsername = async function(token, username) {
   const response = await mssqlDb.launchQuery('transaction', `select 
 us.idUser, us.sUsername, us.sPassword, us.id_pos, us.enabled, us.account_Expired, us.account_Locked, us.password_Expired, pos.category, sup.id_supervisor 
