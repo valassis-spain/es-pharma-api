@@ -127,16 +127,20 @@ where pdpp.ID_PROMOTION = ${idPromotion}`);
 pointOfSaleService.prototype.getPointOfSaleByDelegado = async function(token, filter = {all: ''}, pageNumber = 1, rowsOfPage = 0) {
   let filter2apply = '';
 
-  if ( filter.free ) {
-    filter2apply += ` and ( pos.CIF like '%${filter.free}%' 
-    or pos.main_zip_code like '%${filter.free}%'
-    or pos.name like '%${filter.free}%'
-    or pos.email like '%${filter.free}%'
-    or pos.phone like '%${filter.free}%'
-    or pos.contact_person like '%${filter.free}%'
-    or pos.main_city like '%${filter.free}%'
-    or pos.main_state like '%${filter.free}%'`
+  if ( filter.quicksearch ) {
+    filter2apply += ` and ( pos.CIF like '%${filter.quicksearch}%' 
+    or pos.main_zip_code like '%${filter.quicksearch}%'
+    or pos.name like '%${filter.quicksearch}%'
+    or pos.email like '%${filter.quicksearch}%'
+    or pos.phone like '%${filter.quicksearch}%'
+    or pos.contact_person like '%${filter.quicksearch}%'
+    or pos.main_city like '%${filter.quicksearch}%'
+    or pos.main_state like '%${filter.quicksearch}%'
+    )`
   }
+
+  if ( filter.idPos )
+    filter2apply += ` and pos.id_pos = ${filter.idPos} `
 
   const response = await mssqlDb.launchQuery('transaction', `select up.ID_USER,
        us.sUsername,
@@ -152,10 +156,6 @@ pointOfSaleService.prototype.getPointOfSaleByDelegado = async function(token, fi
        MAIN_CITY,
        MAIN_STATE,
        MAIN_ZIP_CODE,
-       SHIPMENT_STREET,
-       SHIPMENT_CITY,
-       SHIPMENT_STATE,
-       SHIPMENT_ZIP_CODE,
        POS_APP,
        CATEGORY,
        REMOTE_STORE_ID,
@@ -178,7 +178,7 @@ from PS_DIM_POINT_OF_SALE pos
                         join PS_DIM_WEEKLY_CLOSURE wc on pl.ID_WEEK_CLOSURE = wc.ID_WEEK_CLOSURE
                         left join PS_FACT_PAYMENT fp on pl.ID_POS_LETTER = fp.ID_POS_LETTER
                where 1 = 1
-                 ${filter.invalidTicketsLastMonth || filter.pendingPaymentsLastMonth ? 'and  datediff(mm, current_timestamp, wc.WEEK_CLOSURE_DATE) >= -1' : ''}
+                 ${filter.invalidTicketsLastMonth || filter.pendingPaymentsLastMonth ? 'and datediff(mm, current_timestamp, wc.WEEK_CLOSURE_DATE) >= -1' : ''}
                  ${filter.invalidTicketsLast3Months || filter.pendingPaymentsLast3Months ? 'and datediff(mm, current_timestamp, wc.WEEK_CLOSURE_DATE) >= -3' : ''}
                  ${filter.invalidTicketsLastMonth || filter.invalidTicketsLast3Months? 'and pl.INVALID_PRIZES > 0' : ''}
                  ${filter.pendingPaymentsLastMonth || filter.pendingPaymentsLast3Months ? 'and fp.HONOR_DATE is null' : ''}
@@ -187,13 +187,13 @@ from PS_DIM_POINT_OF_SALE pos
 where pos.ID_POS in (
     select distinct(id_pos)
    from USER_POS up
-   where up.id_user = ${idDelegado}
+   where up.id_user = ${filter.idDelegado}
       or up.ID_USER in (select SUPERVISOR.ID_USER
                         from SUPERVISOR
-                        where ID_SUPERVISOR = ${idDelegado})
+                        where ID_SUPERVISOR = ${filter.idDelegado})
 )
 ${filter.invalidTicketsLastMonth || filter.pendingPaymentsLastMonth ? 'and myjoin.invalid_prizes > 0' : ''}
-${filter.pendingPaymentsLastMonth || filter.pendingPaymentsLast3Months ? 'and myjoin.honor_datge is null and myjoin.amount > 0' : ''}
+${filter.pendingPaymentsLastMonth || filter.pendingPaymentsLast3Months ? 'and myjoin.honor_date is null and myjoin.amount > 0' : ''}
 ${filter2apply}
 ORDER BY ID_POS 
 OFFSET (${pageNumber}-1)*${rowsOfPage} ROWS
@@ -204,7 +204,7 @@ ${rowsOfPage > 0 ? `FETCH NEXT ${rowsOfPage} ROWS ONLY` : ''}`);
     eventName: 'get points of sale by delegado',
     eventType: 'READ',
     tableName: 'PS_DIM_POINT_OF_SALE',
-    rowId: idDelegado,
+    rowId: filter.idDelegado,
     data: token.sub
   });
 

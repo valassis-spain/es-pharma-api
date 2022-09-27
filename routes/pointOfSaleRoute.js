@@ -12,7 +12,15 @@ router.post('/', async function(req, res) {
   logger.info('Consulta Puntos de Venta');
 
   // const {origin} = req.body;
-  let {idDelegado, idPos, filter} = req.body;
+  let {
+    idDelegado,
+    idPos,
+    quicksearch,
+    pendingPaymentsLast3Months,
+    pendingPaymentsLastMonth,
+    invalidTicketsLast3Months,
+    invalidTicketsLastMonth
+  } = req.body;
   const token = req.pharmaApiAccessToken;
 
   let pointOfSale;
@@ -43,8 +51,18 @@ router.post('/', async function(req, res) {
   //   // await getPOSDelegado(idDelegado ? idDelegado : token.idUser, idPos, token, res, origin);
   // }
   // else {
-    // get all Pdv linked to user
-    pointOfSale = await pointOfSaleService.getPointOfSaleByDelegado(token, { idDelegado, idPos});
+  // get all Pdv linked to user
+  if (!idDelegado) idDelegado = token.idUser;
+
+  pointOfSale = await pointOfSaleService.getPointOfSaleByDelegado(token, {
+    idDelegado,
+    idPos,
+    quicksearch,
+    pendingPaymentsLast3Months,
+    pendingPaymentsLastMonth,
+    invalidTicketsLast3Months,
+    invalidTicketsLastMonth
+  });
   // }
 
   logger.info('end find');
