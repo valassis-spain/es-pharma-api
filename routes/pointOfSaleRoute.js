@@ -12,7 +12,7 @@ router.post('/', async function(req, res) {
   logger.info('Consulta Puntos de Venta');
 
   // const {origin} = req.body;
-  let {idDelegado, idPos} = req.body;
+  let {idDelegado, idPos, filter} = req.body;
   const token = req.pharmaApiAccessToken;
 
   let pointOfSale;
@@ -28,24 +28,24 @@ router.post('/', async function(req, res) {
     logger.info(`Delegado by token: [${token.idUser}]`);
   }
 
-  if (idPos) {
-    logger.info(`Point of Sale by parameter: [${idPos}]`);
-    isUserPosLinked = await pointOfSaleService.isUserPosLinked(token, idDelegado, idPos);
-
-    if (isUserPosLinked.code > 0) {
-      pointOfSale = await pointOfSaleService.getPointOfSale(token, idPos);
-    }
-    else {
-      logger.error(`User not authorized [${idPos} by ${idDelegado}]`);
-
-      res.status(401).json(isUserPosLinked);
-    }
-    // await getPOSDelegado(idDelegado ? idDelegado : token.idUser, idPos, token, res, origin);
-  }
-  else {
+  // if (idPos) {
+  //   logger.info(`Point of Sale by parameter: [${idPos}]`);
+  //   isUserPosLinked = await pointOfSaleService.isUserPosLinked(token, idDelegado, idPos);
+  //
+  //   if (isUserPosLinked.code > 0) {
+  //     pointOfSale = await pointOfSaleService.getPointOfSale(token, idPos);
+  //   }
+  //   else {
+  //     logger.error(`User not authorized [${idPos} by ${idDelegado}]`);
+  //
+  //     res.status(401).json(isUserPosLinked);
+  //   }
+  //   // await getPOSDelegado(idDelegado ? idDelegado : token.idUser, idPos, token, res, origin);
+  // }
+  // else {
     // get all Pdv linked to user
-    pointOfSale = await pointOfSaleService.getPointOfSaleByDelegado(token, idDelegado);
-  }
+    pointOfSale = await pointOfSaleService.getPointOfSaleByDelegado(token, { idDelegado, idPos});
+  // }
 
   logger.info('end find');
 

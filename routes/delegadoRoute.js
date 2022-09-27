@@ -80,7 +80,9 @@ const getDelegado = async function(req, res, next) {
 
       logger.error(`User Details Not found [${mappingDelegado.length} of ${idDelegado}]`);
 
-      res.status(404).json({error: 'User Details not found'});
+      // res.status(404).json({error: 'User Details not found'});
+      req.locals.mappingDelegado = {};
+      next();
     }
     else {
       req.locals.mappingDelegado = mappingDelegado[0];
@@ -141,7 +143,7 @@ router.post('/read', getUserInit, getUser, verifyAuthorization, getDelegado, asy
       page: (page ? page : 0),
       rowsOfPage: rowsOfPage,
       totalRows: await pointOfSaleService.getRowsPointOfSaleByDelegado(token, token.idUser),
-      pointsOfSale: await pointOfSaleService.getPointOfSaleByDelegado(token, token.idUser)
+      pointsOfSale: await pointOfSaleService.getPointOfSaleByDelegado(token, {idDelegado:token.idUser})
     };
 
     toolService.registerActivity({

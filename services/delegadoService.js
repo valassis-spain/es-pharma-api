@@ -23,9 +23,25 @@ where sup.id_user = ${idDelegado}`);
   return response;
 };
 
+/*
+state = 1 --> user without activity
+state = 2 --> user with email
+state = 3 --> user did email verification
+state = 4 --> user set his own password
+ */
 delegadoService.prototype.getMyDelegs = async function(token, idSupervisor) {
-  const response = await mssqlDb.launchQuery('transaction', `select ud.id_user,ud.name,ud.email,ud.phone,ud.removed_at from SUPERVISOR sup
-left join user_detail ud on ud.id_user = sup.id_user 
+  const response = await mssqlDb.launchQuery('transaction', `select us.sUsername, ud.id_user,ud.name,ud.email,ud.phone,ud.removed_at,
+       case when us.ENABLED=0 and us.ACCOUNT_LOCKED=1 and len(us.sPassword) > 36 then 1
+           else case when us.ENABLED=1 and us.ACCOUNT_LOCKED=1 and len(us.sPassword) <= 36 then 2
+               else case when us.ENABLED=1 and us.ACCOUNT_LOCKED=0 and len(us.sPassword) <= 36 then 3
+                   else 4
+                       end
+                   end
+               end
+       state
+from SUPERVISOR sup
+    left join users us on sup.ID_USER = us.idUser
+left join user_detail ud on ud.id_user = sup.id_supervisor
 where sup.id_supervisor = ${idSupervisor}`);
 
   toolService.registerAudit({

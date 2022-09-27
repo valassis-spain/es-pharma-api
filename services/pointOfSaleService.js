@@ -124,18 +124,77 @@ where pdpp.ID_PROMOTION = ${idPromotion}`);
   return response;
 };
 
-pointOfSaleService.prototype.getPointOfSaleByDelegado = async function(token, idDelegado, pageNumber = 1, rowsOfPage = 0) {
-  const response = await mssqlDb.launchQuery('transaction', `select 
-ID_POS, NAME, CIF, EMAIL, PHONE, CELL_PHONE, CONTACT_PERSON, MAILING_NOTIFICATION, MAIN_STREET, MAIN_CITY, MAIN_STATE, MAIN_ZIP_CODE,
-SHIPMENT_STREET, SHIPMENT_CITY, SHIPMENT_STATE, SHIPMENT_ZIP_CODE, POS_APP,
-CATEGORY, REMOTE_STORE_ID, COUNTRY, ${pageNumber} PAGE, ${rowsOfPage} ROWS_OF_PAGE 
-from PS_DIM_POINT_OF_SALE
-where ID_POS in (select distinct(id_pos)
-                 from USER_POS up
-                 where up.id_user = ${idDelegado}
-                    or up.ID_USER in (select SUPERVISOR.ID_USER
-                                      from SUPERVISOR
-                                      where ID_SUPERVISOR = ${idDelegado}))
+pointOfSaleService.prototype.getPointOfSaleByDelegado = async function(token, filter = {all: ''}, pageNumber = 1, rowsOfPage = 0) {
+  let filter2apply = '';
+
+  if ( filter.free ) {
+    filter2apply += ` and ( pos.CIF like '%${filter.free}%' 
+    or pos.main_zip_code like '%${filter.free}%'
+    or pos.name like '%${filter.free}%'
+    or pos.email like '%${filter.free}%'
+    or pos.phone like '%${filter.free}%'
+    or pos.contact_person like '%${filter.free}%'
+    or pos.main_city like '%${filter.free}%'
+    or pos.main_state like '%${filter.free}%'`
+  }
+
+  const response = await mssqlDb.launchQuery('transaction', `select up.ID_USER,
+       us.sUsername,
+       pos.ID_POS,
+       NAME,
+       CIF,
+       EMAIL,
+       PHONE,
+       CELL_PHONE,
+       CONTACT_PERSON,
+       pos.MAILING_NOTIFICATION,
+       MAIN_STREET,
+       MAIN_CITY,
+       MAIN_STATE,
+       MAIN_ZIP_CODE,
+       SHIPMENT_STREET,
+       SHIPMENT_CITY,
+       SHIPMENT_STATE,
+       SHIPMENT_ZIP_CODE,
+       POS_APP,
+       CATEGORY,
+       REMOTE_STORE_ID,
+       COUNTRY,
+       ${pageNumber}  PAGE,
+       ${rowsOfPage} ROWS_OF_PAGE,
+       myjoin.letters,
+       myjoin.invalid_prizes,
+       myjoin.honor_date,
+       myjoin.amount
+from PS_DIM_POINT_OF_SALE pos
+         join user_pos up on up.ID_POS = pos.ID_POS
+         join users us on up.ID_USER = us.idUser
+         left join (select distinct pl.id_pos,
+                               count(distinct pl.ref_letter) letters,
+                               sum(pl.INVALID_PRIZES)        invalid_prizes,
+                               max(fp.HONOR_DATE)            honor_date,
+                               sum(fp.amount + fp.bonification) amount
+               from PS_FACT_POS_LETTER pl
+                        join PS_DIM_WEEKLY_CLOSURE wc on pl.ID_WEEK_CLOSURE = wc.ID_WEEK_CLOSURE
+                        left join PS_FACT_PAYMENT fp on pl.ID_POS_LETTER = fp.ID_POS_LETTER
+               where 1 = 1
+                 ${filter.invalidTicketsLastMonth || filter.pendingPaymentsLastMonth ? 'and  datediff(mm, current_timestamp, wc.WEEK_CLOSURE_DATE) >= -1' : ''}
+                 ${filter.invalidTicketsLast3Months || filter.pendingPaymentsLast3Months ? 'and datediff(mm, current_timestamp, wc.WEEK_CLOSURE_DATE) >= -3' : ''}
+                 ${filter.invalidTicketsLastMonth || filter.invalidTicketsLast3Months? 'and pl.INVALID_PRIZES > 0' : ''}
+                 ${filter.pendingPaymentsLastMonth || filter.pendingPaymentsLast3Months ? 'and fp.HONOR_DATE is null' : ''}
+                 ${filter.pendingPaymentsLastMonth || filter.pendingPaymentsLast3Months ? 'and fp.AMOUNT + fp.BONIFICATION > 0' : ''}
+               group by pl.id_pos) myjoin on myjoin.ID_POS = pos.ID_POS
+where pos.ID_POS in (
+    select distinct(id_pos)
+   from USER_POS up
+   where up.id_user = ${idDelegado}
+      or up.ID_USER in (select SUPERVISOR.ID_USER
+                        from SUPERVISOR
+                        where ID_SUPERVISOR = ${idDelegado})
+)
+${filter.invalidTicketsLastMonth || filter.pendingPaymentsLastMonth ? 'and myjoin.invalid_prizes > 0' : ''}
+${filter.pendingPaymentsLastMonth || filter.pendingPaymentsLast3Months ? 'and myjoin.honor_datge is null and myjoin.amount > 0' : ''}
+${filter2apply}
 ORDER BY ID_POS 
 OFFSET (${pageNumber}-1)*${rowsOfPage} ROWS
 ${rowsOfPage > 0 ? `FETCH NEXT ${rowsOfPage} ROWS ONLY` : ''}`);
@@ -153,7 +212,7 @@ ${rowsOfPage > 0 ? `FETCH NEXT ${rowsOfPage} ROWS ONLY` : ''}`);
 };
 
 pointOfSaleService.prototype.getRowsPointOfSaleByDelegado = async function(token, idDelegado, pageNumber = 1, rowsOfPage = 0) {
-  const response = await mssqlDb.launchQuery('transaction', `select count(*) 
+  const response = await mssqlDb.launchQuery('transaction', `select count(*)
 from PS_DIM_POINT_OF_SALE
 where ID_POS in (select distinct(id_pos)
                  from USER_POS up
@@ -190,7 +249,7 @@ pointOfSaleService.prototype.updateLinkPointOfSaleToDelegado = async function(to
 };
 
 pointOfSaleService.prototype.createLinkPointOfSaleToDelegado = async function(token, idDelegado, idPos) {
-  const response = await mssqlDb.launchQuery('transaction', `insert into USER_POS (ID_USER, ID_POS, CREATED_AT, REMOVED_AT) 
+  const response = await mssqlDb.launchQuery('transaction', `insert into USER_POS (ID_USER, ID_POS, CREATED_AT, REMOVED_AT)
 values (${idDelegado},${idPos},current_timestamp,null);`);
 
   toolService.registerAudit({
@@ -233,11 +292,11 @@ where pdb.ID_MANUFACTURER = ${idManufacturer}
 };
 
 pointOfSaleService.prototype.getPointOfSale = async function(token, idPos) {
-  const response = await mssqlDb.launchQuery('transaction', `select 
+  const response = await mssqlDb.launchQuery('transaction', `select
 ID_POS, NAME, CIF, EMAIL, IBAN, PHONE, CELL_PHONE, CONTACT_PERSON, PAYMENT_MEAN,
 MAILING_NOTIFICATION, MAIN_STREET, MAIN_CITY, MAIN_STATE, MAIN_ZIP_CODE,
 SHIPMENT_STREET, SHIPMENT_CITY, SHIPMENT_STATE, SHIPMENT_ZIP_CODE, POS_APP,
-CATEGORY, REMOTE_STORE_ID, COUNTRY 
+CATEGORY, REMOTE_STORE_ID, COUNTRY
 from  PS_DIM_POINT_OF_SALE pos where pos.ID_POS = ${idPos}`);
 
   toolService.registerAudit({
