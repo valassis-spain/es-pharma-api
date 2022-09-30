@@ -124,7 +124,7 @@ where pdpp.ID_PROMOTION = ${idPromotion}`);
   return response;
 };
 
-pointOfSaleService.prototype.getPointOfSaleByDelegado = async function(token, filter = {all: ''}, pageNumber = 1, rowsOfPage = 0) {
+pointOfSaleService.prototype.getListPointOfSaleByDelegado = async function(token, filter = {all: ''}, pageNumber = 1, rowsOfPage = 0) {
   let filter2apply = '';
 
   if ( filter.quicksearch ) {
@@ -145,6 +145,7 @@ pointOfSaleService.prototype.getPointOfSaleByDelegado = async function(token, fi
   const response = await mssqlDb.launchQuery('transaction', `select up.ID_USER,
        us.sUsername,
        pos.ID_POS,
+       pdmp.MANUFACTURER_POS_CODE manufacturer_code,
        NAME,
        CIF,
        EMAIL,
@@ -169,6 +170,7 @@ pointOfSaleService.prototype.getPointOfSaleByDelegado = async function(token, fi
 from PS_DIM_POINT_OF_SALE pos
          join user_pos up on up.ID_POS = pos.ID_POS
          join users us on up.ID_USER = us.idUser
+         left join PS_DIM_MANUFACTURER_POS pdmp on pdmp.ID_POS = pos.ID_POS and pdmp.ID_MANUFACTURER = ${filter.idManufacturer}
          left join (select distinct pl.id_pos,
                                count(distinct pl.ref_letter) letters,
                                sum(pl.INVALID_PRIZES)        invalid_prizes,
@@ -177,6 +179,8 @@ from PS_DIM_POINT_OF_SALE pos
                from PS_FACT_POS_LETTER pl
                         join PS_DIM_WEEKLY_CLOSURE wc on pl.ID_WEEK_CLOSURE = wc.ID_WEEK_CLOSURE
                         left join PS_FACT_PAYMENT fp on pl.ID_POS_LETTER = fp.ID_POS_LETTER
+                        join PS_DIM_PROMOTION pdp on pl.ID_PROMOTION = pdp.ID_PROMOTION
+                        join PS_DIM_BRAND pdb on pdp.ID_BRAND = pdb.ID_BRAND and pdb.ID_MANUFACTURER = ${filter.idManufacturer}
                where 1 = 1
                  ${filter.invalidTicketsLastMonth || filter.pendingPaymentsLastMonth ? 'and datediff(mm, current_timestamp, wc.WEEK_CLOSURE_DATE) >= -1' : ''}
                  ${filter.invalidTicketsLast3Months || filter.pendingPaymentsLast3Months ? 'and datediff(mm, current_timestamp, wc.WEEK_CLOSURE_DATE) >= -3' : ''}
@@ -209,28 +213,6 @@ ${rowsOfPage > 0 ? `FETCH NEXT ${rowsOfPage} ROWS ONLY` : ''}`);
   });
 
   return response;
-};
-
-pointOfSaleService.prototype.getRowsPointOfSaleByDelegado = async function(token, idDelegado, pageNumber = 1, rowsOfPage = 0) {
-  const response = await mssqlDb.launchQuery('transaction', `select count(*)
-from PS_DIM_POINT_OF_SALE
-where ID_POS in (select distinct(id_pos)
-                 from USER_POS up
-                 where up.id_user = ${idDelegado}
-                    or up.ID_USER in (select SUPERVISOR.ID_USER
-                                      from SUPERVISOR
-                                      where ID_SUPERVISOR = ${idDelegado}))`);
-
-  toolService.registerAudit({
-    user_id: token.idUser,
-    eventName: 'get Number of points of sale by delegado',
-    eventType: 'READ',
-    tableName: 'PS_DIM_POINT_OF_SALE',
-    rowId: idDelegado,
-    data: token.sub
-  });
-
-  return response[0][''];
 };
 
 pointOfSaleService.prototype.updateLinkPointOfSaleToDelegado = async function(token, idDelegado, idPos) {
@@ -274,6 +256,9 @@ pointOfSaleService.prototype.getPromotions = async function(token, idManufacture
      , (select pdpp.ID_POS
         from PS_DIM_POS_PROMOTION pdpp
         where pdpp.ID_PROMOTION = pdp.ID_PROMOTION and pdpp.ID_POS = ${idPos}) id_pos
+      , ( select count(*)
+        from PS_FACT_POS_LETTER pl
+        where pl.ID_POS = ${idPos} and pl.ID_PROMOTION = pdp.ID_PROMOTION) letters
 from PS_DIM_PROMOTION pdp
          left join PS_DIM_BRAND pdb on pdp.ID_BRAND = pdb.ID_BRAND
 where pdb.ID_MANUFACTURER = ${idManufacturer}
@@ -291,7 +276,7 @@ where pdb.ID_MANUFACTURER = ${idManufacturer}
   return response;
 };
 
-pointOfSaleService.prototype.getPointOfSale = async function(token, idPos) {
+pointOfSaleService.prototype.getPointOfSaleDetails = async function(token, idManufacturer, idPos) {
   const response = await mssqlDb.launchQuery('transaction', `select
 ID_POS, NAME, CIF, EMAIL, IBAN, PHONE, CELL_PHONE, CONTACT_PERSON, PAYMENT_MEAN,
 MAILING_NOTIFICATION, MAIN_STREET, MAIN_CITY, MAIN_STATE, MAIN_ZIP_CODE,

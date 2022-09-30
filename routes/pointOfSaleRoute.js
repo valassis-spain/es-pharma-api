@@ -12,8 +12,8 @@ router.post('/', async function(req, res) {
   logger.info('Consulta Puntos de Venta');
 
   // const {origin} = req.body;
-  let {
-    idDelegado,
+  const {
+    idManufacturer,
     idPos,
     quicksearch,
     pendingPaymentsLast3Months,
@@ -21,6 +21,9 @@ router.post('/', async function(req, res) {
     invalidTicketsLast3Months,
     invalidTicketsLastMonth
   } = req.body;
+
+  let {idDelegado} = req.body;
+
   const token = req.pharmaApiAccessToken;
 
   let pointOfSale;
@@ -36,25 +39,10 @@ router.post('/', async function(req, res) {
     logger.info(`Delegado by token: [${token.idUser}]`);
   }
 
-  // if (idPos) {
-  //   logger.info(`Point of Sale by parameter: [${idPos}]`);
-  //   isUserPosLinked = await pointOfSaleService.isUserPosLinked(token, idDelegado, idPos);
-  //
-  //   if (isUserPosLinked.code > 0) {
-  //     pointOfSale = await pointOfSaleService.getPointOfSale(token, idPos);
-  //   }
-  //   else {
-  //     logger.error(`User not authorized [${idPos} by ${idDelegado}]`);
-  //
-  //     res.status(401).json(isUserPosLinked);
-  //   }
-  //   // await getPOSDelegado(idDelegado ? idDelegado : token.idUser, idPos, token, res, origin);
-  // }
-  // else {
-  // get all Pdv linked to user
   if (!idDelegado) idDelegado = token.idUser;
 
-  pointOfSale = await pointOfSaleService.getPointOfSaleByDelegado(token, {
+  pointOfSale = await pointOfSaleService.getListPointOfSaleByDelegado(token, {
+    idManufacturer,
     idDelegado,
     idPos,
     quicksearch,
@@ -68,6 +56,24 @@ router.post('/', async function(req, res) {
   logger.info('end find');
 
   res.status(200).json({pointOfSale: pointOfSale, accessToken: issueAccessToken(token)});
+});
+
+router.post('/posInfo', async function(req, res) {
+  logger.info('Consulta Detalles de Punto de Venta');
+
+  const {idPos} = req.body;
+  const {idManufacturer} = req.body;
+  const token = req.pharmaApiAccessToken;
+
+  const mappginPos = await pointOfSaleService.getPointOfSaleDetails(token, idManufacturer, idPos);
+
+  const mappingPromotions = await pointOfSaleService.getPromotions(token, idManufacturer, idPos);
+
+  mappginPos[0].promotions = mappingPromotions;
+
+  logger.info('end pos details');
+
+  res.status(200).json({pointOfSale: mappginPos[0], accessToken: issueAccessToken(token)});
 });
 
 router.post('/posPromotions', async function(req, res) {

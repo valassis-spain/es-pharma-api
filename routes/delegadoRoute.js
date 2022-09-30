@@ -124,7 +124,7 @@ const verifyAuthorization = function(req, res, next) {
 router.post('/read', getUserInit, getUser, verifyAuthorization, getDelegado, async function(req, res, next) {
   logger.info('Consulta delegado');
 
-  const {origin, page} = req.body;
+  const {origin, page, idManufacturer} = req.body;
   // let {idDelegado} = req.body;
   const token = req.pharmaApiAccessToken;
 
@@ -136,14 +136,15 @@ router.post('/read', getUserInit, getUser, verifyAuthorization, getDelegado, asy
 
     // if I am a SUPERVISOR, get my delegados
     if (isMemberOf.ROLE_SUPERVISOR)
-      req.locals.mappingDelegado.delegados = await delegadoService.getMyDelegs(token, token.idUser);
+      req.locals.mappingDelegado.delegados = await delegadoService.getMyDelegs(token, idManufacturer, token.idUser);
 
+    const result = await pointOfSaleService.getListPointOfSaleByDelegado(token, {idDelegado:token.idUser})
     // search my PdVs
     req.locals.mappingDelegado.pos = {
       page: (page ? page : 0),
       rowsOfPage: rowsOfPage,
-      totalRows: await pointOfSaleService.getRowsPointOfSaleByDelegado(token, token.idUser),
-      pointsOfSale: await pointOfSaleService.getPointOfSaleByDelegado(token, {idDelegado:token.idUser})
+      totalRows: result ? result.pointOfSale.length : 0,
+      pointsOfSale: result
     };
 
     toolService.registerActivity({

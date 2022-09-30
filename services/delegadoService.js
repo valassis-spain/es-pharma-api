@@ -29,19 +29,42 @@ state = 2 --> user with email
 state = 3 --> user did email verification
 state = 4 --> user set his own password
  */
-delegadoService.prototype.getMyDelegs = async function(token, idSupervisor) {
-  const response = await mssqlDb.launchQuery('transaction', `select us.sUsername, ud.id_user,ud.name,ud.email,ud.phone,ud.removed_at,
-       case when us.ENABLED=0 and us.ACCOUNT_LOCKED=1 and len(us.sPassword) > 36 then 1
-           else case when us.ENABLED=1 and us.ACCOUNT_LOCKED=1 and len(us.sPassword) <= 36 then 2
-               else case when us.ENABLED=1 and us.ACCOUNT_LOCKED=0 and len(us.sPassword) <= 36 then 3
-                   else 4
-                       end
-                   end
+delegadoService.prototype.getMyDelegs = async function(token, idManufacturer, idSupervisor) {
+  const response = await mssqlDb.launchQuery('transaction', `select us.idUser,
+       us.sUsername,
+       us.enabled,
+       us.ACCOUNT_LOCKED,
+       us.sPassword,
+       ud.id_user,
+       ud.name,
+       ud.email,
+       ud.phone,
+       ud.removed_at,
+       case
+           when us.ENABLED = 0 and us.ACCOUNT_LOCKED = 1 and len(us.sPassword) > 36 then 1
+           else case
+                    when us.ENABLED = 1 and us.ACCOUNT_LOCKED = 1 and len(us.sPassword) <= 36 then 2
+                    else case
+                             when us.ENABLED = 1 and us.ACCOUNT_LOCKED = 0 and len(us.sPassword) <= 36 then 3
+                             else 4
+                        end
                end
-       state
+           end
+                                        state,
+       (select count(distinct up.id_pos)
+        from user_pos up
+                 join PS_DIM_BRAND pdb on pdb.ID_MANUFACTURER = ${idManufacturer}
+                 join PS_DIM_PROMOTION pdp on pdb.ID_BRAND = pdp.ID_BRAND
+                 join PS_DIM_POS_PROMOTION pdpp on pdpp.ID_PROMOTION = pdp.ID_PROMOTION and pdpp.ID_POS = up.ID_POS
+        where up.ID_USER = sup.ID_USER) pos_linked_manufacturer_with_promo,
+       (select count(distinct up.id_pos)
+        from user_pos up
+                 join PS_DIM_MANUFACTURER_POS pdb on pdb.ID_MANUFACTURER = ${idManufacturer}
+        where up.ID_USER = sup.ID_USER) pos_linked
+--        ,*
 from SUPERVISOR sup
-    left join users us on sup.ID_USER = us.idUser
-left join user_detail ud on ud.id_user = sup.id_supervisor
+         left join users us on sup.ID_USER = us.idUser
+         left join user_detail ud on ud.id_user = sup.id_supervisor
 where sup.id_supervisor = ${idSupervisor}`);
 
   toolService.registerAudit({
