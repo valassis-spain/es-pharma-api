@@ -34,7 +34,6 @@ delegadoService.prototype.getMyDelegs = async function(token, idManufacturer, id
        us.sUsername,
        us.enabled,
        us.ACCOUNT_LOCKED,
-       us.sPassword,
        ud.id_user,
        ud.name,
        ud.email,
@@ -53,10 +52,11 @@ delegadoService.prototype.getMyDelegs = async function(token, idManufacturer, id
                                         state,
        (select count(distinct up.id_pos)
         from user_pos up
-                 join PS_DIM_BRAND pdb on pdb.ID_MANUFACTURER = ${idManufacturer}
+                 join PS_DIM_MANUFACTURER_POS pdm on pdm.ID_MANUFACTURER = ${idManufacturer}
+                 join PS_DIM_BRAND pdb on pdb.ID_MANUFACTURER = pdm.ID_MANUFACTURER
                  join PS_DIM_PROMOTION pdp on pdb.ID_BRAND = pdp.ID_BRAND
                  join PS_DIM_POS_PROMOTION pdpp on pdpp.ID_PROMOTION = pdp.ID_PROMOTION and pdpp.ID_POS = up.ID_POS
-        where up.ID_USER = sup.ID_USER) pos_linked_manufacturer_with_promo,
+        where up.ID_USER = sup.ID_USER) pos_linked_with_promo,
        (select count(distinct up.id_pos)
         from user_pos up
                  join PS_DIM_MANUFACTURER_POS pdb on pdb.ID_MANUFACTURER = ${idManufacturer}

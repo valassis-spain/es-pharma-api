@@ -114,10 +114,23 @@ where us.sUsername = '${username}'`);
 
 userService.prototype.getUserById = async function(token, idUser) {
   const response = await mssqlDb.launchQuery('transaction', `select 
-us.idUser, us.sUsername, us.sPassword, us.id_pos, us.enabled, us.account_Expired, us.account_Locked, us.password_Expired, pos.category 
+us.idUser, us.sUsername, us.id_pos, pos.category,
+case
+   when us.ENABLED = 0 and us.ACCOUNT_LOCKED = 1 and len(us.sPassword) > 36 then 1
+   else case
+            when us.ENABLED = 1 and us.ACCOUNT_LOCKED = 1 and len(us.sPassword) <= 36 then 2
+            else case
+                     when us.ENABLED = 1 and us.ACCOUNT_LOCKED = 0 and len(us.sPassword) <= 36 then 3
+                     else 4
+                end
+       end
+   end
+                                state,
+ud.name, ud.email, ud.phone, ud.removed_at 
 from users us 
 left join PS_DIM_POINT_OF_SALE pos on pos.id_pos = us.id_pos 
 left join SUPERVISOR sup on sup.id_user = us.idUser
+left join user_detail ud on ud.id_user = us.idUser 
 where us.idUser=${idUser}`);
 
   toolService.registerAudit({
