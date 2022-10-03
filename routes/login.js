@@ -192,6 +192,7 @@ async function sendEmailCode(mappingUser, email, res, origin) {
   // generate unique code
   const { randomUUID } = require('crypto'); // Added in: node v14.17.0
   let uuid = randomUUID();
+  const host = process.env.HOST;
 
   const body = '' +
     '<!-- CSS only -->\n' +
@@ -205,7 +206,7 @@ async function sendEmailCode(mappingUser, email, res, origin) {
     '<br/>' +
     '    Por favor, haz click en el botón para confirmar tu dirección:<br/>' +
     '<br/>' +
-    '    <a class="btn btn-primary text-center" href="http://localhost:3010/api/deleg/authenticate/verifyCode?uuid='+uuid+'&email='+email+'">Verificar mi dirección</a> <br/>' +
+    '    <a class="btn btn-primary text-center" href="'+host+'/api/deleg/authenticate/verifyCode?uuid='+uuid+'&email='+email+'">Verificar mi dirección</a> <br/>' +
     '<br/>' +
     '    Si tienes algún problema tienes nuestros datos de contacto en el pie de este correo.<br/>' +
     '<br/>' +
