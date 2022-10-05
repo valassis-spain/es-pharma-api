@@ -92,7 +92,18 @@ where idUser=${idUser}`);
 
 userService.prototype.getUserByUsername = async function(token, username) {
   const response = await mssqlDb.launchQuery('transaction', `select 
-us.idUser, us.sUsername, us.sPassword, us.id_pos, us.enabled, us.account_Expired, us.account_Locked, us.password_Expired, pos.category, sup.id_supervisor 
+us.idUser, us.sUsername, us.sPassword, us.id_pos, us.enabled, us.account_Expired, us.account_Locked, us.password_Expired, pos.category, sup.id_supervisor,
+case
+   when us.ENABLED = 0 and us.ACCOUNT_LOCKED = 1 and len(us.sPassword) > 36 then 1
+   else case
+            when us.ENABLED = 1 and us.ACCOUNT_LOCKED = 1 and len(us.sPassword) <= 36 then 2
+            else case
+                     when us.ENABLED = 1 and us.ACCOUNT_LOCKED = 0 and len(us.sPassword) <= 36 then 3
+                     else 4
+                end
+       end
+   end
+                                state 
 from users us 
 left join PS_DIM_POINT_OF_SALE pos on pos.id_pos = us.id_pos 
 left join SUPERVISOR sup on sup.id_user = us.idUser

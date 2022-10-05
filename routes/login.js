@@ -21,6 +21,7 @@ router.post('/', async (req, res) => {
   let resStatus = 200;
 
   const {username, password, origin} = req.body;
+  let mappingUser
 
   logger.info(`login page {username:${username}}`);
 
@@ -41,11 +42,11 @@ router.post('/', async (req, res) => {
       throw new Error(message01 + ' (L1)');
     }
 
-    const mapping = await userService.getUserByUsername(null, username);
+    mappingUser = await userService.getUserByUsername(null, username);
 
-    if (mapping.length !== 1) {
+    if (mappingUser.length !== 1) {
       resStatus = 403;
-      logger.debug(`User not Found [${mapping.length} of ${username}]`);
+      logger.debug(`User not Found [${mappingUser.length} of ${username}]`);
 
       toolService.registerAudit({
         user_id: 52,
@@ -53,20 +54,20 @@ router.post('/', async (req, res) => {
         eventType: 'READ',
         tableName: 'USERS',
         rowId: 0,
-        data: `User not Found [${mapping.length} of ${username}]`
+        data: `User not Found [${mappingUser.length} of ${username}]`
       });
 
       throw new Error(message01 + ' (L2)');
     }
 
-    const match = await bcrypt.compare(password, mapping[0].sPassword);
+    const match = await bcrypt.compare(password, mappingUser[0].sPassword);
 
     if (!match) {
       resStatus = 403;
       logger.debug(`Password not match [${username}]`);
 
       toolService.registerAudit({
-        user_id: mapping[0].idUser,
+        user_id: mappingUser[0].idUser,
         eventName: 'login failed',
         eventType: 'READ',
         tableName: 'USERS',
@@ -78,12 +79,12 @@ router.post('/', async (req, res) => {
     }
 
     // verify user details
-    if (!mapping[0].enabled || mapping[0].account_Expired || mapping[0].account_Locked || mapping[0].password_Expired) {
+    if (!mappingUser[0].enabled || mappingUser[0].account_Expired || mappingUser[0].account_Locked || mappingUser[0].password_Expired) {
       resStatus = 403;
       logger.debug(`disabled user [${username}]`);
 
       toolService.registerAudit({
-        user_id: mapping[0].idUser,
+        user_id: mappingUser[0].idUser,
         eventName: 'login failed',
         eventType: 'READ',
         tableName: 'USERS',
@@ -95,13 +96,13 @@ router.post('/', async (req, res) => {
     }
 
     // test origin
-    const isMemberOf = await userService.memberOf({idUser: mapping[0].idUser, sub: username}, origin, username);
+    const isMemberOf = await userService.memberOf({idUser: mappingUser[0].idUser, sub: username}, origin, username);
 
     if (origin === process.env.ORIGIN_APP && !(isMemberOf.ROLE_USER || isMemberOf.ROLE_ADMIN)) {
       logger.debug(`User is not Pharma [${username}]`);
 
       toolService.registerAudit({
-        user_id: mapping[0].idUser,
+        user_id: mappingUser[0].idUser,
         eventName: 'login failed',
         eventType: 'READ',
         tableName: 'USERS',
@@ -115,7 +116,7 @@ router.post('/', async (req, res) => {
       logger.debug(`User is not Delegado [${username}]`);
 
       toolService.registerAudit({
-        user_id: mapping[0].idUser,
+        user_id: mappingUser[0].idUser,
         eventName: 'login failed',
         eventType: 'READ',
         tableName: 'USERS',
@@ -127,14 +128,14 @@ router.post('/', async (req, res) => {
     }
 
     const accessClaim = {
-      idPos: mapping[0].id_pos,
-      idUser: mapping[0].idUser,
+      idPos: mappingUser[0].id_pos,
+      idUser: mappingUser[0].idUser,
       country: 'es'
     };
 
     const refreshClaim = {
-      idPos: mapping[0].id_pos,
-      idUser: mapping[0].idUser,
+      idPos: mappingUser[0].id_pos,
+      idUser: mappingUser[0].idUser,
       country: 'es'
     };
 
@@ -146,23 +147,23 @@ router.post('/', async (req, res) => {
     const access_token = issueAccessToken(accessClaim);
     const refresh_token = issueRefreshToken(refreshClaim);
 
-    const mappingManufacturers = await delegadoService.getMyManufacturers(accessClaim, mapping[0].idUser);
+    const mappingManufacturers = await delegadoService.getMyManufacturers(accessClaim, mappingUser[0].idUser);
 
     const verified = verifyToken(access_token);
     logger.debug(`JWT verification: ${JSON.stringify(verified)}`);
 
     toolService.registerAudit({
-      user_id: mapping[0].idUser,
+      user_id: mappingUser[0].idUser,
       eventName: 'login success',
       eventType: 'READ',
       tableName: 'USERS',
-      rowId: mapping[0].idUser,
+      rowId: mappingUser[0].idUser,
       data: username
     });
 
     toolService.registerActivity({
-      user_id: mapping[0].idUser,
-      idPos: mapping[0].id_pos,
+      user_id: mappingUser[0].idUser,
+      idPos: mappingUser[0].id_pos,
       action: 'Login',
       origin: origin
     });
@@ -171,9 +172,9 @@ router.post('/', async (req, res) => {
 
     res.json(
       {
-        id_pos: mapping[0].id_pos,
-        id_user: mapping[0].idUser,
-        status: mapping[0].category,
+        id_pos: mappingUser[0].id_pos,
+        id_user: mappingUser[0].idUser,
+        status: mappingUser[0].category,
         roles: isMemberOf.roles,
         manufacturers: mappingManufacturers,
         access_token: access_token,
@@ -184,7 +185,11 @@ router.post('/', async (req, res) => {
   }
   catch (e) {
     logger.error(e.stack);
-    res.status(resStatus === 200 ? 500 : resStatus).json({message: e.message + ' (LE)'});
+    const response = {message: e.message + ' (LE)'};
+    if ( mappingUser ) {
+      response.state = mappingUser[0].state;
+    }
+    res.status(resStatus === 200 ? 500 : resStatus).json(response);
   }
 });
 
