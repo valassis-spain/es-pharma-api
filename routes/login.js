@@ -209,7 +209,7 @@ async function sendEmailCode(mappingUser, email, res, origin, forget) {
     '<br/>' +
     `    Para ${forget?'renovar su contraseña':'completar el registro'} necesitamos la confirmación de su dirección de correo electrónico.<br/>` +
     '<br/>' +
-      `    Una vez confirmada su dirección de correo electrónico, la próxima vez que acceda a la APP podrá introducir su nueva contraseña de acceso.<br/>`
+      `    Una vez confirmada su dirección de correo electrónico, la próxima vez que acceda a la APP podrá introducir su nueva contraseña de acceso.<br/>` +
     '<br/>' +
     '    Por favor, haz click en el botón para confirmar tu dirección:<br/>' +
     '<br/>' +
@@ -222,8 +222,10 @@ async function sendEmailCode(mappingUser, email, res, origin, forget) {
     '</div>';
 
 
+  const subject = process.env.MJ_EMAIL_SUBJECT;
+
   // send email with unique code
-  const mjResponse = await mailjetLib.sendEmail('fjperez@savispain.es', body);
+  const mjResponse = await mailjetLib.sendEmail('fjperez@savispain.es', subject, body);
 
   if (mjResponse && mjResponse.response.status === 200) {
     // email sended successfully
