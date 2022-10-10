@@ -226,7 +226,7 @@ async function sendEmailCode(mappingUser, email, res, origin, forget) {
   const subject = process.env.MJ_EMAIL_SUBJECT;
 
   // send email with unique code
-  const mjResponse = await mailjetLib.sendEmail('fjperez@savispain.es', subject, body);
+  const mjResponse = await mailjetLib.sendEmail(email, subject, body);
 
   if (mjResponse && mjResponse.response.status === 200) {
     // email sended successfully
