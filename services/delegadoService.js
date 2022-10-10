@@ -64,7 +64,7 @@ delegadoService.prototype.getMyDelegs = async function(token, idManufacturer, id
 --        ,*
 from SUPERVISOR sup
          left join users us on sup.ID_USER = us.idUser
-         left join user_detail ud on ud.id_user = sup.id_supervisor
+         left join user_detail ud on ud.id_user = us.idUser
 where sup.id_supervisor = ${idSupervisor}`);
 
   toolService.registerAudit({
