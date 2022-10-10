@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <title>savi Pharma - Delegados - Establecer contraseña</title>
+
+    <link href="https://getbootstrap.com/docs/5.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" href="https://getbootstrap.com/docs/5.2/assets/img/favicons/apple-touch-icon.png" sizes="180x180">
+    <link rel="icon" href="https://getbootstrap.com/docs/5.2/assets/img/favicons/favicon-32x32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="https://getbootstrap.com/docs/5.2/assets/img/favicons/favicon-16x16.png" sizes="16x16" type="image/png">
+    <link rel="manifest" href="https://getbootstrap.com/docs/5.2/assets/img/favicons/manifest.json">
+    <link rel="mask-icon" href="https://getbootstrap.com/docs/5.2/assets/img/favicons/safari-pinned-tab.svg" color="#712cf9">
+    <link rel="icon" href="/static/image/savi_favicon.ico">
+    <meta name="theme-color" content="#712cf9">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
+
+        .b-example-divider {
+            height: 3rem;
+            background-color: rgba(0, 0, 0, .1);
+            border: solid rgba(0, 0, 0, .15);
+            border-width: 1px 0;
+            box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
+        }
+
+        .b-example-vr {
+            flex-shrink: 0;
+            width: 1.5rem;
+            height: 100vh;
+        }
+
+        .bi {
+            vertical-align: -.125em;
+            fill: currentColor;
+        }
+
+        .nav-scroller {
+            position: relative;
+            z-index: 2;
+            height: 2.75rem;
+            overflow-y: hidden;
+        }
+
+        .nav-scroller .nav {
+            display: flex;
+            flex-wrap: nowrap;
+            padding-bottom: 1rem;
+            margin-top: -1px;
+            overflow-x: auto;
+            text-align: center;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .ocultar {
+            display: none;
+        }
+
+        .mostrar {
+            display: block;
+        }
+    </style>
+
+
+    <!-- Custom styles for this template -->
+    <link href="/static/css/setpwd.css" rel="stylesheet">
+</head>
+<body class="text-center">
+
+<main class="form-signin w-100 m-auto">
+<!--    <form method="post" action="https://apigtwpharma.savispain.es/api/deleg/authenticate/setpwd" onsubmit="verificarPasswords(); return false">-->
+    <form method="post" action="http://localhost:3010/api/deleg/authenticate/setpwd" onsubmit="verificarPasswords(); return false">
+        <img class="mb-4" src="/static/image/savipharmadelegados.png" alt="" width="142" height="114">
+        <h1 class="h3 mb-3 fw-normal">Establecimiento de contraseña</h1>
+        <span style="text-align: left;font-size: x-small">Consejos:
+            <ul>
+                <li>Al menos 8 carácteres</li>
+                <li>Que contenga alguna mayúscula, minúscula y signo ortográfico</li>
+                <li>Que contenga algún carácter especial</li>
+            </ul>
+        </span>
+
+        <div id="msg"></div>
+
+        <!-- Mensajes de Verificación -->
+        <div id="error" class="alert alert-danger ocultar" role="alert">
+            Las Contraseñas no coinciden, vuelve a intentar !
+        </div>
+        <div id="ok" class="alert alert-success ocultar" role="alert">
+            Las Contraseñas coinciden ! (Procesando formulario ... )
+        </div>
+        <!-- Fin Mensajes de Verificación -->
+
+        <div class="form-floating">
+            <input type="email" class="form-control" id="floatingInput" disabled="true" value="<%= username %>">
+            <label for="floatingInput">Nombre de usuario</label>
+        </div>
+        <div class="form-floating">
+            <input type="password" class="form-control" id="floatingPassword" placeholder="Contraseña" name="pwd">
+            <label for="floatingPassword">Contraseña</label>
+            <span id="StrengthDisp" class="badge displayBadge">Débil</span>
+        </div>
+        <div class="form-floating">
+            <input type="password" class="form-control" id="floatingPassword2" placeholder="Repite la contraseña" name="pwd2">
+            <label for="floatingPassword2">Repite la contraseña</label>
+        </div>
+
+        <input type="hidden" name="email" value="<%= username %>"/>
+        <input type="hidden" name="code" value="<%= code %>"/>
+
+        <button class="w-100 btn btn-lg btn-primary" type="submit">Enviar</button>
+        <p class="mt-5 mb-3 text-muted">&copy;savi Marketing Solutions S.L. <script>document.write(/\d{4}/.exec(Date())[0])</script></p>
+    </form>
+</main>
+
+<script>
+  function verificarPasswords() {
+
+    // Ontenemos los valores de los campos de contraseñas
+    pass1 = document.getElementById('floatingPassword');
+    pass2 = document.getElementById('floatingPassword2');
+
+    // Verificamos si las constraseñas no coinciden
+    if (pass1.value != pass2.value) {
+
+      // Si las constraseñas no coinciden mostramos un mensaje
+      document.getElementById("error").classList.add("mostrar");
+
+      return false;
+    } else {
+
+      // Si las contraseñas coinciden ocultamos el mensaje de error
+      document.getElementById("error").classList.remove("mostrar");
+
+      // Mostramos un mensaje mencionando que las Contraseñas coinciden
+      document.getElementById("ok").classList.remove("ocultar");
+
+      // Desabilitamos el botón de login
+      document.getElementById("login").disabled = true;
+
+      // Refrescamos la página (Simulación de envío del formulario)
+      setTimeout(function() {
+        location.reload();
+      }, 3000);
+
+      return true;
+    }
+  }
+
+  // timeout before a callback is called
+
+  let timeout;
+
+  // traversing the DOM and getting the input and span using their IDs
+
+  let password = document.getElementById('floatingPassword')
+  let strengthBadge = document.getElementById('StrengthDisp')
+  strengthBadge.style.display = 'none'
+
+  // The strong and weak password Regex pattern checker
+
+  let strongPassword = new RegExp('(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9])(?=.{8,})')
+  let mediumPassword = new RegExp('((?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9])(?=.{6,}))|((?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9])(?=.{8,}))')
+
+  function StrengthChecker(PasswordParameter){
+    // We then change the badge's color and text based on the password strength
+
+    if(strongPassword.test(PasswordParameter)) {
+      strengthBadge.style.backgroundColor = "green"
+      strengthBadge.textContent = 'Fuerte'
+    } else if(mediumPassword.test(PasswordParameter)){
+      strengthBadge.style.backgroundColor = 'blue'
+      strengthBadge.textContent = 'Pasable'
+    } else{
+      strengthBadge.style.backgroundColor = 'red'
+      strengthBadge.textContent = 'Débil'
+    }
+  }
+
+  // Adding an input event listener when a user types to the  password input
+
+  password.addEventListener("input", () => {
+
+    //The badge is hidden by default, so we show it
+
+    strengthBadge.style.display= 'block'
+    clearTimeout(timeout);
+
+    //We then call the StrengChecker function as a callback then pass the typed password to it
+
+    timeout = setTimeout(() => StrengthChecker(password.value), 500);
+
+    //Incase a user clears the text, the badge is hidden again
+
+    if(password.value.length !== 0){
+      strengthBadge.style.display != 'block'
+    } else{
+      strengthBadge.style.display = 'none'
+    }
+  });
+</script>
+
+
+</body>
+</html>

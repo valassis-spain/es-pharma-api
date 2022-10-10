@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const path = require('path')
 
 const {logger, sqlConfig} = require('./config');
 
@@ -10,6 +11,12 @@ app.set('json spaces', 2);
 // Middleware
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
+
+// set the view engine to ejs
+app.set('view engine', 'ejs');
+
+// static files
+app.use('/static', express.static(path.join(__dirname, 'public')))
 
 // routes
 var indexRouter = require('./routes/index');

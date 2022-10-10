@@ -1,6 +1,7 @@
 const {Router} = require('express');
 const {logger} = require('../config');
 const router = Router();
+const path = require('path');
 // const mssqlDb = require('../lib/mssqldb').create();
 
 const userService = require('../services/userService').create();
@@ -488,7 +489,7 @@ router.get('/verifycode', async function(req, res, next) {
 
     if (!errors && uuid !== mappingUser[0].sPassword) {
       logger.error(`${email} UUID received and UUID saved are different`);
-      res.status(403).json({message: 'Error: code not match'});
+      // res.status(403).json({message: 'Error: code not match'});
       toolService.registerAudit({
         user_id: mappingUser[0].idUser,
         eventName: 'email code received not match',
@@ -512,20 +513,27 @@ router.get('/verifycode', async function(req, res, next) {
       });
 
       // todo: make a HTML beauty response
-      res.status(200).json({message: 'code accepted'})
+      // res.status(200).json({message: 'code accepted'})
+      // res.sendFile(path.join(__dirname, '/../public/setpwd.html'));
+      res.render('setpwd', {username:email, code:uuid});
+    }
+
+    if ( errors ) {
+      res.sendFile(path.join(__dirname, '/../public/verifycodeerror.html'));
     }
   }
   catch (e) {
     logger.error(`Error en el registro del delegado [${email}]`);
     logger.error(e.stack);
-    res.status(500);
+    // res.status(500);
+    res.sendFile(path.join(__dirname, '/../public/verifycodeerror.html'));
   }
 });
 
 router.post('/setpwd', async function(req, res, next) {
   logger.info('delegado - establecer contraseña');
 
-  const {origin, idUser, email, pwd} = req.body;
+  const {origin, idUser, email, pwd, code} = req.body;
   let errors = false;
   let mappingUser
 
@@ -548,6 +556,20 @@ router.post('/setpwd', async function(req, res, next) {
     //   errors = true;
     // }
 
+    if (!errors && code !== mappingUser[0].sPassword) {
+      logger.error(`${email} UUID received and UUID saved are different`);
+      // res.status(403).json({message: 'Error: code not match'});
+      toolService.registerAudit({
+        user_id: mappingUser[0].idUser,
+        eventName: 'email code received not match',
+        eventType: 'READ',
+        tableName: 'USERS',
+        rowId: mappingUser[0].idUser,
+        data: email
+      });
+      errors = true;
+    }
+
     if (!errors) {
       const bcrypt = require('bcrypt');
       let newPwd
@@ -563,20 +585,26 @@ router.post('/setpwd', async function(req, res, next) {
             origin: origin
           });
 
-          res.status(200).json({message: 'password updated'})
+          // res.status(200).json({message: 'password updated'})
+          res.sendFile(path.join(__dirname, '/../public/setpwdsuccess.html'));
         }
         else {
           logger.error('Error hashing password')
           logger.error(err)
-          res.status(500);
+          // res.status(500);
+          errors = true;
         }
       });
     }
+
+    if ( errors )
+      res.sendFile(path.join(__dirname, '/../public/setpwderror.html'));
   }
   catch (e) {
     logger.error(`Error en el registro del delegado [${email}]`);
     logger.error(e.stack);
-    res.status(500);
+    // res.status(500);
+    res.sendFile(path.join(__dirname, '/../public/setpwderror.html'));
   }
 });
 
