@@ -55,6 +55,12 @@ app.use('/api/deleg/authenticate',   function(req, res, next) {
   next();
 }, loginRouter);
 
+// JSON Web Token functionalities
+app.use('/api/token',   function(req, res, next) {
+  logger.debug('Router Token');
+  next();
+}, tokenRouter);
+
 // global actions before any call
 app.use('/api/*',   function(req, res, next) {
   logger.debug('Router Index');
@@ -83,12 +89,6 @@ app.use('/api/deleg/user',   function(req, res, next) {
   logger.debug('Router User');
   next();
 }, userRouter);
-
-// JSON Web Token functionalities
-app.use('/api/token',   function(req, res, next) {
-  logger.debug('Router Token');
-  next();
-}, tokenRouter);
 
 // app.use('/api/promotions', promotionsRouter);
 // app.use('/api/ticket', ticketRouter);
