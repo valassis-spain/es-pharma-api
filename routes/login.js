@@ -187,9 +187,7 @@ router.post('/', async (req, res) => {
   catch (e) {
     logger.error(e.stack);
     const response = {message: e.message + ' (LE)'};
-    if (mappingUser) {
-      response.state = mappingUser[0].state;
-    }
+
     res.status(resStatus === 200 ? 500 : resStatus).json(response);
   }
 });

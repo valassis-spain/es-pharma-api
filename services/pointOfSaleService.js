@@ -277,18 +277,71 @@ where pdb.ID_MANUFACTURER = ${idManufacturer}
 };
 
 pointOfSaleService.prototype.getPointOfSaleDetails = async function(token, idManufacturer, idPos) {
-  const response = await mssqlDb.launchQuery('transaction', `select
-ID_POS, NAME, CIF, EMAIL, IBAN, PHONE, CELL_PHONE, CONTACT_PERSON, PAYMENT_MEAN,
-MAILING_NOTIFICATION, MAIN_STREET, MAIN_CITY, MAIN_STATE, MAIN_ZIP_CODE,
-SHIPMENT_STREET, SHIPMENT_CITY, SHIPMENT_STATE, SHIPMENT_ZIP_CODE, POS_APP,
-CATEGORY, REMOTE_STORE_ID, COUNTRY
-from  PS_DIM_POINT_OF_SALE pos where pos.ID_POS = ${idPos}`);
+  const response = await mssqlDb.launchQuery('transaction', `select pos.ID_POS,
+       NAME,
+       CIF,
+       EMAIL,
+       IBAN,
+       PHONE,
+       CELL_PHONE,
+       CONTACT_PERSON,
+       PAYMENT_MEAN,
+       MAILING_NOTIFICATION,
+       MAIN_STREET,
+       MAIN_CITY,
+       MAIN_STATE,
+       MAIN_ZIP_CODE,
+       SHIPMENT_STREET,
+       SHIPMENT_CITY,
+       SHIPMENT_STATE,
+       SHIPMENT_ZIP_CODE,
+       POS_APP,
+       CATEGORY,
+       REMOTE_STORE_ID,
+       COUNTRY
+from PS_DIM_POINT_OF_SALE pos
+left join PS_DIM_MANUFACTURER_POS pdmp on pdmp.ID_POS = pos.ID_POS
+where pos.ID_POS = ${idPos}
+and pdmp.ID_MANUFACTURER = ${idManufacturer}`);
 
   toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'get point of sale by ID',
     eventType: 'READ',
     tableName: 'PS_DIM_POINT_OF_SALE',
+    rowId: idPos,
+    data: token.sub
+  });
+
+  return response;
+};
+
+pointOfSaleService.prototype.createLinkPointOfSaleToPromotion = async function(token, idManufacturer, idPos, idPromotion, limit) {
+  const response = await mssqlDb.launchQuery('transaction', `insert into PS_DIM_POS_PROMOTION (ID_PROMOTION, ID_POS, ID_MESSAGE, POS_LIMIT, POS_MARGIN, DOCUMENT, DOCUMENT_DATE, DOCUMENT_NAME) 
+ values 
+ (${idPromotion}, ${idPos}, null, ${limit?limit:0}, null, null, null, null);`);
+
+  toolService.registerAudit({
+    user_id: token.idUser,
+    eventName: 'link point of sale to Promotion',
+    eventType: 'INSERT',
+    tableName: 'PS_DIM_POS_PROMOTION',
+    rowId: idPos,
+    data: token.sub
+  });
+
+  return response;
+};
+
+pointOfSaleService.prototype.updateLinkPointOfSaleToPromotion = async function(token, idManufacturer, idPos, idPromotion, limit) {
+  const response = await mssqlDb.launchQuery('transaction', `update DIM_POS_PROMOTION set POS_LIMIT=${limit}
+where ID_PROMOTION=${idPromotion} and ID_POS=${idPos};`);
+
+  toolService.registerAudit({
+    user_id: token.idUser,
+    eventName: 'link point of sale to Promotion',
+    eventType: 'UPDATE',
+    tableName: 'PS_DIM_POS_PROMOTION',
     rowId: idPos,
     data: token.sub
   });
