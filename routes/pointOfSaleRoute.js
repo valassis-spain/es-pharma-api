@@ -3,6 +3,7 @@ const {logger} = require('../config');
 const router = Router();
 
 const pointOfSaleService = require('../services/pointOfSaleService').create();
+const bridgeService = require('../services/bridgeService').create();
 
 // const {verifyAccesToken} = require('../lib/jwt');
 const {issueAccessToken} = require('../lib/jwt');
@@ -77,12 +78,12 @@ router.post('/posInfo', async function(req, res) {
   try {
     const mappginPos = await pointOfSaleService.getPointOfSaleDetails(token, idManufacturer, idPos);
 
-    if ( mappginPos.length === 0 ) {
+    if (mappginPos.length === 0) {
       errors = true;
       res.status(404).json({error: 'Point of Sale not found.'});
     }
 
-    if ( ! errors ) {
+    if (!errors) {
       const mappingPromotions = await pointOfSaleService.getPromotions(token, idManufacturer, idPos);
 
       mappginPos[0].promotions = mappingPromotions;
@@ -136,13 +137,13 @@ router.post('/linkPromotion', async function(req, res) {
   try {
     const mappginPos = await pointOfSaleService.getPointOfSaleDetails(token, idManufacturer, idPos);
 
-    if ( mappginPos.length === 0 ) {
+    if (mappginPos.length === 0) {
       errors = true;
       logger.error(`Point of sale ${idPos} not found fo manufacturer ${idManufacturer}`);
       res.status(404).json({error: 'Point of Sale not found.'});
     }
 
-    if ( !errors ) {
+    if (!errors) {
       const mappingPromotions = await pointOfSaleService.getPromotions(token, idManufacturer, idPos);
 
       let promotion;
@@ -192,13 +193,13 @@ router.post('/updatelinkpromotion', async function(req, res) {
   try {
     const mappginPos = await pointOfSaleService.getPointOfSaleDetails(token, idManufacturer, idPos);
 
-    if ( mappginPos.length === 0 ) {
+    if (mappginPos.length === 0) {
       errors = true;
       logger.error(`Point of sale ${idPos} not found fo manufacturer ${idManufacturer}`);
       res.status(404).json({error: 'Point of Sale not found.'});
     }
 
-    if ( !errors ) {
+    if (!errors) {
       const mappingPromotions = await pointOfSaleService.getPromotions(token, idManufacturer, idPos);
 
       let promotion;
@@ -212,7 +213,7 @@ router.post('/updatelinkpromotion', async function(req, res) {
         logger.error(`Promotion ${idPromotion} is not available for Point of sale ${idPos}`);
         errors = true;
       }
-      else if (! promotion.id_pos) {
+      else if (!promotion.id_pos) {
         res.status(400).json({error: 'Pos is not linked to promotion'});
         logger.error(`Point of sale ${idPos} is not linked to promotion ${idPromotion}`);
         errors = true;
@@ -225,8 +226,82 @@ router.post('/updatelinkpromotion', async function(req, res) {
       logger.info(`Update link between Point of Sale ${idPos} and promotion ${idPromotion}`);
       logger.info('end updatelinkpromotion');
 
-      res.status(200).json({message: 'Updated link between Point of Sale and promotion', accessToken: issueAccessToken(token)});
+      res.status(200).json({
+        message: 'Updated link between Point of Sale and promotion',
+        accessToken: issueAccessToken(token)
+      });
     }
+  }
+  catch (e) {
+    logger.error(e.message);
+    logger.error(e.stack);
+
+    res.status(500).json({error: e.message});
+  }
+});
+
+router.post('/promotioninfo', async function(req, res) {
+  logger.info('Información del punto de venta para la promoción');
+
+  const {origin} = req.body;
+  const {idPos, idPromotion, limit} = req.body;
+  const {idManufacturer} = req.body;
+  const token = req.pharmaApiAccessToken;
+  let errors = false;
+
+  try {
+    const bridgeResponse = await bridgeService.userview(token, 16116, 6952);
+
+    if (!bridgeResponse) {
+      res.status(500).json({error: 'ERROR calling to bridge'});
+      errors = true;
+    }
+
+    if (!errors) {
+      let posLetterInfo = await pointOfSaleService.getInfoPromotion(token, idManufacturer, idPos, idPromotion)
+
+      if (!posLetterInfo) {
+        // this point of sale don't have letters
+        posLetterInfo = [];
+      }
+
+      // set payment values
+      for (const dayWithData of bridgeResponse.info.days) {
+        logger.debug(`con ${dayWithData.date}`)
+        for (const payment of posLetterInfo) {
+          let paymentDate = new Date(2000 + parseInt(payment.year), 0, 1);
+          paymentDate.setDate(paymentDate.getDate() + parseInt(payment.dayofyear));
+          if (dayWithData.date == paymentDate.toISOString().split('T')[0]) {
+            dayWithData.valid_prizes = parseInt(payment.VALID_PRIZES);
+            dayWithData.invalid_prizes = parseInt(payment.INVALID_PRIZES);
+            dayWithData.FAIL_COUPON = payment.FAIL_COUPON;
+            dayWithData.FAIL_FORM = payment.FAIL_FORM;
+            dayWithData.FAIL_POSTMARK = payment.FAIL_POSTMARK;
+            dayWithData.FAIL_PRIVATE_PROMOTION = payment.FAIL_PRIVATE_PROMOTION;
+            dayWithData.FAIL_PRODUCT = payment.FAIL_PRODUCT;
+            dayWithData.FAIL_SALES_LIST = payment.FAIL_SALES_LIST;
+            dayWithData.FAIL_TICKET_DATE = payment.FAIL_TICKET_DATE;
+            dayWithData.FAIL_TICKET_ID = payment.FAIL_TICKET_ID;
+
+            if ( payment.VALID_PRIZES === 0 ) {
+              dayWithData.state = 'invalid';
+            }
+            else if (payment.ID_ASSIGNED_PRIZE) {
+              dayWithData.state = 'closed';
+              dayWithData.amount = payment.AMOUNT;
+              if (payment.HONOR_DATE)
+                dayWithData.paymentDate = payment.HONOR_DATE.toISOString().split('T')[0];
+            }
+            else {
+              dayWithData.state = 'pending';
+            }
+            break;
+          }
+          logger.debug(`${dayWithData.date} con ${paymentDate.toISOString().split('T')[0]}`)
+        } // end for each payment
+      } // end for each day with submissions
+    }
+    res.status(200).json(bridgeResponse);
   }
   catch (e) {
     logger.error(e.message);
