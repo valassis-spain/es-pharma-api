@@ -103,9 +103,11 @@ case
                 end
        end
    end
-                                state 
+                                state,
+ud.NAME, ud.EMAIL, ud.PHONE                                 
 from users us 
 left join PS_DIM_POINT_OF_SALE pos on pos.id_pos = us.id_pos 
+left join USER_DETAIL ud on us.idUser = ud.ID_USER
 left join SUPERVISOR sup on sup.id_user = us.idUser
 where us.sUsername = '${username}'`);
 
