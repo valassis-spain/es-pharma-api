@@ -301,6 +301,7 @@ router.post('/promotioninfo', async function(req, res) {
         } // end for each payment
       } // end for each day with submissions
     }
+    bridgeResponse.access_token = issueAccessToken(token)
     res.status(200).json(bridgeResponse);
   }
   catch (e) {
