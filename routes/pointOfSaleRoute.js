@@ -315,4 +315,26 @@ router.post('/promotioninfo', async function(req, res) {
   }
 });
 
+router.post('/stats', async function(req, res) {
+  logger.info('Información Estadistica del punto de venta para el fabricante');
+
+  // const {origin} = req.body;
+  const {idPos} = req.body;
+  const {idManufacturer} = req.body;
+  const token = req.pharmaApiAccessToken;
+
+  try {
+    const mappingStatistics = await pointOfSaleService.getStatistics(token, idManufacturer, idPos);
+
+    mappingStatistics.access_token = issueAccessToken(token);
+    res.status(200).json(mappingStatistics);
+  }
+  catch (e) {
+    logger.error(e.message);
+    logger.error(e.stack);
+
+    res.status(500).json({error: e.message});
+  }
+});
+
 module.exports = router;

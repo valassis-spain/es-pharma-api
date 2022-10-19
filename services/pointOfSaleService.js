@@ -389,6 +389,91 @@ pointOfSaleService.prototype.getInfoPromotion = async function(token, idManufact
   return response;
 };
 
+pointOfSaleService.prototype.getStatistics = async function(token, idManufacturer, idPos) {
+  const response1 = await mssqlDb.launchQuery('transaction', `
+select 
+count(distinct pdp.ID_PROMOTION) total_promotions,
+count(distinct pl.ID_PROMOTION) promotions_with_participation
+from PS_DIM_POINT_OF_SALE pos
+left join PS_DIM_MANUFACTURER pdm on pdm.ID_MANUFACTURER = ${idManufacturer}
+left join PS_DIM_BRAND pdb on pdm.ID_MANUFACTURER = pdb.ID_MANUFACTURER
+left join PS_DIM_PROMOTION pdp on pdb.ID_BRAND = pdp.ID_BRAND
+left join PS_FACT_POS_LETTER pl on pdp.ID_PROMOTION = pl.ID_PROMOTION and pl.ID_POS = pos.ID_POS
+where pos.ID_POS = ${idPos}
+group by pos.ID_POS;`);
+
+  const response2 = await mssqlDb.launchQuery('transaction', `
+select
+count(distinct pl.ID_PROMOTION) promos_last_week
+from PS_DIM_MANUFACTURER pdm
+join PS_DIM_BRAND pdb on pdm.ID_MANUFACTURER = pdb.ID_MANUFACTURER
+join PS_DIM_PROMOTION pdp on pdb.ID_BRAND = pdp.ID_BRAND
+join PS_FACT_POS_LETTER pl on pdp.ID_PROMOTION = pl.ID_PROMOTION and pl.ID_POS = ${idPos}
+join PS_DIM_WEEKLY_CLOSURE pdwc on pl.ID_WEEK_CLOSURE = pdwc.ID_WEEK_CLOSURE and
+ datepart(wk, pdwc.WEEK_CLOSURE_DATE) >=
+ (datepart(wk, current_timestamp) - 1)
+where pdm.ID_MANUFACTURER = ${idManufacturer};`);
+
+  const response3 = await mssqlDb.launchQuery('transaction', `
+select 
+count(distinct pl.ID_PROMOTION) promos_last_month
+from PS_DIM_MANUFACTURER pdm
+join PS_DIM_BRAND pdb on pdm.ID_MANUFACTURER = pdb.ID_MANUFACTURER
+join PS_DIM_PROMOTION pdp on pdb.ID_BRAND = pdp.ID_BRAND
+join PS_FACT_POS_LETTER pl on pdp.ID_PROMOTION = pl.ID_PROMOTION and pl.ID_POS = ${idPos}
+join PS_DIM_WEEKLY_CLOSURE pdwc on pl.ID_WEEK_CLOSURE = pdwc.ID_WEEK_CLOSURE and
+ datepart(wk, pdwc.WEEK_CLOSURE_DATE) >=
+ (datepart(wk, current_timestamp) - 4)
+where pdm.ID_MANUFACTURER = ${idManufacturer};`);
+
+  const response4 = await mssqlDb.launchQuery('transaction', `
+select 
+avg(data.reimboursement) avg_amount_by_promo,
+avg(data.total_prizes) avg_total_prizes_by_promo,
+avg(data.valid_prizes) avg_valid_prizes_by_promo,
+avg(data.invalid_prizes) avg_invalid_prizes_by_promo,
+avg(data.FAIL_TICKET_DATE) avg_FAIL_TICKET_DATE,
+avg(data.FAIL_POSTMARK) avg_FAIL_POSTMARK,
+avg(data.FAIL_PRODUCT) avg_FAIL_PRODUCT,
+avg(data.FAIL_TICKET_ID) avg_FAIL_TICKET_ID,
+avg(data.FAIL_PRIVATE_PROMOTION) avg_FAIL_PRIVATE_PROMOTION,
+avg(data.amount_by_prizes) avg_amount_by_prize_and_promo
+from (select pos.ID_POS,
+pdp.PROMOTION_REFERENCE,
+sum(pfp.AMOUNT) + sum(pfp.BONIFICATION) reimboursement,
+sum(pl.TOTAL_PRIZES) total_prizes,
+sum(pl.VALID_PRIZES) valid_prizes,
+sum(pl.INVALID_PRIZES) invalid_prizes,
+sum(pl.FAIL_TICKET_DATE) FAIL_TICKET_DATE,
+sum(pl.FAIL_POSTMARK) FAIL_POSTMARK,
+sum(pl.FAIL_PRODUCT) FAIL_PRODUCT,
+sum(pl.FAIL_TICKET_ID) FAIL_TICKET_ID,
+sum(pl.FAIL_PRIVATE_PROMOTION) FAIL_PRIVATE_PROMOTION,
+(sum(pfp.AMOUNT) + sum(pfp.BONIFICATION)) / sum(pl.VALID_PRIZES) amount_by_prizes
+from PS_DIM_POINT_OF_SALE pos
+left join PS_DIM_MANUFACTURER pdm on pdm.ID_MANUFACTURER = ${idManufacturer}
+left join PS_DIM_BRAND pdb on pdm.ID_MANUFACTURER = pdb.ID_MANUFACTURER
+left join PS_DIM_PROMOTION pdp on pdb.ID_BRAND = pdp.ID_BRAND
+left join PS_FACT_POS_LETTER pl on pdp.ID_PROMOTION = pl.ID_PROMOTION and pl.ID_POS = pos.ID_POS
+left join PS_FACT_PAYMENT pfp on pl.ID_POS_LETTER = pfp.ID_POS_LETTER
+where pos.ID_POS = ${idPos}
+group by pos.ID_POS, pdp.PROMOTION_REFERENCE) data
+group by data.ID_POS;`);
+
+  toolService.registerAudit({
+    user_id: token.idUser,
+    eventName: 'Get Point of Sale Statistics',
+    eventType: 'READ',
+    tableName: 'PS_FACT_POS_LETTER',
+    rowId: idPos,
+    data: idManufacturer
+  });
+
+  const total_response = Object.assign({}, response1[0], response2[0], response3[0], response4[0]);
+
+  return total_response;
+};
+
 exports.pointOfSaleService = pointOfSaleService;
 
 exports.create = function() {
