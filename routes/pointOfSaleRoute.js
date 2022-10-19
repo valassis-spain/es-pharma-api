@@ -29,9 +29,6 @@ router.post('/', async function(req, res) {
 
   let pointOfSale;
 
-  // by default, point of sale is linked to user
-  let isUserPosLinked = {code: 1, message: 'value by default'};
-
   if (idDelegado) {
     logger.info(`Delegado by parameter: [${idDelegado}]`);
   }
@@ -73,7 +70,7 @@ router.post('/posInfo', async function(req, res) {
   const {idPos} = req.body;
   const {idManufacturer} = req.body;
   const token = req.pharmaApiAccessToken;
-  let errors
+  let errors;
 
   try {
     const mappginPos = await pointOfSaleService.getPointOfSaleDetails(token, idManufacturer, idPos);
@@ -128,7 +125,7 @@ router.post('/posPromotions', async function(req, res) {
 router.post('/linkPromotion', async function(req, res) {
   logger.info('Asociar Punto de Venta a Promocion');
 
-  const {origin} = req.body;
+  // const {origin} = req.body;
   const {idPos, idPromotion, limit} = req.body;
   const {idManufacturer} = req.body;
   const token = req.pharmaApiAccessToken;
@@ -148,9 +145,8 @@ router.post('/linkPromotion', async function(req, res) {
 
       let promotion;
 
-      for (let myPromotion of mappingPromotions) {
-        if (myPromotion.ID_PROMOTION === idPromotion) promotion = myPromotion
-      }
+      for (const myPromotion of mappingPromotions)
+        if (myPromotion.ID_PROMOTION === idPromotion) promotion = myPromotion;
 
       if (!promotion) {
         res.status(404).json({error: 'Promotion not found'});
@@ -165,7 +161,8 @@ router.post('/linkPromotion', async function(req, res) {
     }
 
     if (!errors) {
-      const mappingLink = await pointOfSaleService.createLinkPointOfSaleToPromotion(token, idManufacturer, idPos, idPromotion, limit);
+      // const mappingLink =
+      await pointOfSaleService.createLinkPointOfSaleToPromotion(token, idManufacturer, idPos, idPromotion, limit);
 
       logger.info(`Point of Sale ${idPos} liked to promotion ${idPromotion}`);
       logger.info('end linkPromotion');
@@ -184,7 +181,7 @@ router.post('/linkPromotion', async function(req, res) {
 router.post('/updatelinkpromotion', async function(req, res) {
   logger.info('Actualizar asociacion Punto de Venta a Promocion');
 
-  const {origin} = req.body;
+  // const {origin} = req.body;
   const {idPos, idPromotion, limit} = req.body;
   const {idManufacturer} = req.body;
   const token = req.pharmaApiAccessToken;
@@ -204,9 +201,8 @@ router.post('/updatelinkpromotion', async function(req, res) {
 
       let promotion;
 
-      for (let myPromotion of mappingPromotions) {
-        if (myPromotion.ID_PROMOTION === idPromotion) promotion = myPromotion
-      }
+      for (const myPromotion of mappingPromotions)
+        if (myPromotion.ID_PROMOTION === idPromotion) promotion = myPromotion;
 
       if (!promotion) {
         res.status(404).json({error: 'Promotion not found'});
@@ -221,7 +217,8 @@ router.post('/updatelinkpromotion', async function(req, res) {
     }
 
     if (!errors) {
-      const mappingLink = await pointOfSaleService.updateLinkPointOfSaleToPromotion(token, idManufacturer, idPos, idPromotion, limit);
+      // const mappingLink =
+      await pointOfSaleService.updateLinkPointOfSaleToPromotion(token, idManufacturer, idPos, idPromotion, limit);
 
       logger.info(`Update link between Point of Sale ${idPos} and promotion ${idPromotion}`);
       logger.info('end updatelinkpromotion');
@@ -243,8 +240,8 @@ router.post('/updatelinkpromotion', async function(req, res) {
 router.post('/promotioninfo', async function(req, res) {
   logger.info('Información del punto de venta para la promoción');
 
-  const {origin} = req.body;
-  const {idPos, idPromotion, limit} = req.body;
+  // const {origin} = req.body;
+  const {idPos, idPromotion} = req.body;
   const {idManufacturer} = req.body;
   const token = req.pharmaApiAccessToken;
   let errors = false;
@@ -258,7 +255,7 @@ router.post('/promotioninfo', async function(req, res) {
     }
 
     if (!errors) {
-      let posLetterInfo = await pointOfSaleService.getInfoPromotion(token, idManufacturer, idPos, idPromotion)
+      let posLetterInfo = await pointOfSaleService.getInfoPromotion(token, idManufacturer, idPos, idPromotion);
 
       if (!posLetterInfo) {
         // this point of sale don't have letters
@@ -267,10 +264,12 @@ router.post('/promotioninfo', async function(req, res) {
 
       // set payment values
       for (const dayWithData of bridgeResponse.info.days) {
-        logger.debug(`con ${dayWithData.date}`)
+        logger.debug(`con ${dayWithData.date}`);
+
         for (const payment of posLetterInfo) {
-          let paymentDate = new Date(2000 + parseInt(payment.year), 0, 1);
+          const paymentDate = new Date(2000 + parseInt(payment.year), 0, 1);
           paymentDate.setDate(paymentDate.getDate() + parseInt(payment.dayofyear));
+
           if (dayWithData.date == paymentDate.toISOString().split('T')[0]) {
             dayWithData.valid_prizes = parseInt(payment.VALID_PRIZES);
             dayWithData.invalid_prizes = parseInt(payment.INVALID_PRIZES);
@@ -283,25 +282,29 @@ router.post('/promotioninfo', async function(req, res) {
             dayWithData.FAIL_TICKET_DATE = payment.FAIL_TICKET_DATE;
             dayWithData.FAIL_TICKET_ID = payment.FAIL_TICKET_ID;
 
-            if ( payment.VALID_PRIZES === 0 ) {
+            if (payment.VALID_PRIZES === 0) {
               dayWithData.state = 'invalid';
             }
             else if (payment.ID_ASSIGNED_PRIZE) {
               dayWithData.state = 'closed';
               dayWithData.amount = payment.AMOUNT;
+
               if (payment.HONOR_DATE)
                 dayWithData.paymentDate = payment.HONOR_DATE.toISOString().split('T')[0];
             }
             else {
               dayWithData.state = 'pending';
             }
+
             break;
           }
-          logger.debug(`${dayWithData.date} con ${paymentDate.toISOString().split('T')[0]}`)
+
+          logger.debug(`${dayWithData.date} con ${paymentDate.toISOString().split('T')[0]}`);
         } // end for each payment
       } // end for each day with submissions
     }
-    bridgeResponse.access_token = issueAccessToken(token)
+
+    bridgeResponse.access_token = issueAccessToken(token);
     res.status(200).json(bridgeResponse);
   }
   catch (e) {

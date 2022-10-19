@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const path = require('path')
+const path = require('path');
 
 const {logger, sqlConfig} = require('./config');
 
@@ -16,7 +16,7 @@ app.use(express.json());
 app.set('view engine', 'ejs');
 
 // static files
-app.use('/static', express.static(path.join(__dirname, 'public')))
+app.use('/static', express.static(path.join(__dirname, 'public')));
 
 // routes
 var indexRouter = require('./routes/index');

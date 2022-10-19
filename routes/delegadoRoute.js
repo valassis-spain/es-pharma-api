@@ -131,6 +131,7 @@ router.post('/read', getUserInit, getUser, verifyAuthorization, getDelegado, asy
   const rowsOfPage = parseInt(process.env.SQL_FETCH_ROWS);
 
   req.locals.mappingDelegado.info = req.locals.mappingUser;
+
   try {
     // get my ROLES
     const isMemberOf = await userService.memberOf(token, origin, token.sub);
@@ -139,8 +140,12 @@ router.post('/read', getUserInit, getUser, verifyAuthorization, getDelegado, asy
     if (isMemberOf.ROLE_SUPERVISOR)
       req.locals.mappingDelegado.delegados = await delegadoService.getMyDelegs(token, idManufacturer, token.idUser);
 
-    const result = await pointOfSaleService.getListPointOfSaleByDelegado(token, {idManufacturer, idDelegado:token.idUser})
+    const result = await pointOfSaleService.getListPointOfSaleByDelegado(token, {
+      idManufacturer,
+      idDelegado: token.idUser
+    });
     // search my PdVs
+
     req.locals.mappingDelegado.pos = {
       page: (page ? page : 0),
       rowsOfPage: rowsOfPage,

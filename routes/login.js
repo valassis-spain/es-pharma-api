@@ -7,7 +7,7 @@ const path = require('path');
 const userService = require('../services/userService').create();
 
 const {verifyToken, issueAccessToken, issueRefreshToken} = require('../lib/jwt');
-const {randomUUID} = require("crypto");
+// const {randomUUID} = require('crypto');
 const delegadoService = require('../services/delegadoService').create();
 const toolService = require('../services/toolService').create();
 const mailjetLib = require('../lib/mailjet').create();
@@ -22,7 +22,7 @@ router.post('/', async (req, res) => {
   let resStatus = 200;
 
   const {username, password, origin} = req.body;
-  let mappingUser
+  let mappingUser;
 
   logger.info(`login page {username:${username}}`);
 
@@ -198,10 +198,10 @@ router.post('/', async (req, res) => {
 async function sendEmailCode(mappingUser, email, res, origin, forget) {
   // generate unique code
   const {randomUUID} = require('crypto'); // Added in: node v14.17.0
-  let uuid = randomUUID();
+  const uuid = randomUUID();
   const host = process.env.HOST;
 
-  let body = '' +
+  const body = '' +
     '<!-- CSS only -->\n' +
     '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">' +
     '<div>' +
@@ -209,9 +209,9 @@ async function sendEmailCode(mappingUser, email, res, origin, forget) {
     '<br/>' +
     '    Gracias por acceder a la APP para Delegados de *****.<br/>' +
     '<br/>' +
-    `    Para ${forget?'renovar su contraseña':'completar el registro'} necesitamos la confirmación de su dirección de correo electrónico.<br/>` +
+    `    Para ${forget ? 'renovar su contraseña' : 'completar el registro'} necesitamos la confirmación de su dirección de correo electrónico.<br/>` +
     '<br/>' +
-      `    Una vez confirmada su dirección de correo electrónico, la próxima vez que acceda a la APP podrá introducir su nueva contraseña de acceso.<br/>` +
+    '    Una vez confirmada su dirección de correo electrónico, la próxima vez que acceda a la APP podrá introducir su nueva contraseña de acceso.<br/>' +
     '<br/>' +
     '    Por favor, haz click en el botón para confirmar tu dirección:<br/>' +
     '<br/>' +
@@ -223,7 +223,6 @@ async function sendEmailCode(mappingUser, email, res, origin, forget) {
     '<br/>' +
     '</div>';
 
-
   const subject = process.env.MJ_EMAIL_SUBJECT;
 
   // send email with unique code
@@ -232,7 +231,8 @@ async function sendEmailCode(mappingUser, email, res, origin, forget) {
   if (mjResponse && mjResponse.response.status === 200) {
     // email sended successfully
     // update user with unique code sended
-    const updateResp = await userService.updateUserWithCode(null, mappingUser[0].idUser, uuid);
+    // const updateResp =
+    await userService.updateUserWithCode(null, mappingUser[0].idUser, uuid);
 
     logger.debug(`Mailjet Response: ${JSON.stringify(mjResponse.response.data.Messages, null, 2)}`);
 
@@ -246,7 +246,7 @@ async function sendEmailCode(mappingUser, email, res, origin, forget) {
     return true;
   }
   else {
-    logger.error(`Error sended register email`);
+    logger.error('Error sended register email');
 
     toolService.registerAudit({
       user_id: mappingUser[0].idUser,
@@ -262,7 +262,10 @@ async function sendEmailCode(mappingUser, email, res, origin, forget) {
 }
 
 async function checkUserByEmail(email, res, origin) {
-  let mappingUser, mappingRoles, errors;
+  let mappingUser;
+  let mappingRoles;
+  let errors;
+
   if (!email) {
     res.status(400).json({message: 'missing required field email'});
     errors = true;
@@ -270,6 +273,7 @@ async function checkUserByEmail(email, res, origin) {
 
   if (!errors) {
     mappingUser = await userService.getUserByUsername(null, email);
+
     if (!mappingUser || mappingUser.length !== 1) {
       logger.error(`Found ${mappingUser.length} of ${email}`);
 
@@ -289,6 +293,7 @@ async function checkUserByEmail(email, res, origin) {
 
   if (!errors) {
     mappingRoles = await userService.memberOf(null, origin, email);
+
     if (!mappingRoles || mappingRoles.length === 0) {
       logger.error(`Found ${mappingRoles.length} of ${email}`);
 
@@ -320,6 +325,7 @@ async function checkUserByEmail(email, res, origin) {
       errors = true;
     }
   }
+
   return {errors, mappingUser};
 }
 
@@ -332,7 +338,7 @@ async function sendVerificationMail(res, origin, email, forget) {
   if (!errors) {
     if (!mappingUser[0].enabled && mappingUser[0].account_Locked) {
       // user is not enabled and is locked, first step
-      let sendEmailResponse = await sendEmailCode(mappingUser, email, res, origin, forget);
+      const sendEmailResponse = await sendEmailCode(mappingUser, email, res, origin, forget);
 
       if (sendEmailResponse) {
         toolService.registerActivity({
@@ -341,7 +347,8 @@ async function sendVerificationMail(res, origin, email, forget) {
           action: 'Resend 0',
           origin: origin
         });
-        res.status(200).json({message: 'User accepted', code: 0})
+
+        res.status(200).json({message: 'User accepted', code: 0});
       }
       else {
         res.status(500).json({message: 'Error sending email'});
@@ -349,7 +356,7 @@ async function sendVerificationMail(res, origin, email, forget) {
     }
     else if (mappingUser[0].enabled && mappingUser[0].account_Locked) {
       // email code has been sended but not verified, resend email
-      let sendEmailResponse = await sendEmailCode(mappingUser, email, res, origin, forget);
+      const sendEmailResponse = await sendEmailCode(mappingUser, email, res, origin, forget);
 
       if (sendEmailResponse) {
         toolService.registerActivity({
@@ -358,14 +365,15 @@ async function sendVerificationMail(res, origin, email, forget) {
           action: 'Resend 1',
           origin: origin
         });
-        res.status(200).json({message: 'User accepted', code: 1})
+
+        res.status(200).json({message: 'User accepted', code: 1});
       }
     }
     else if (mappingUser[0].enabled && !mappingUser[0].account_Locked) {
       // user is enable and unlocked
       if (forget) {
         // user forget pwd, resend email
-        let sendEmailResponse = await sendEmailCode(mappingUser, email, res, origin, forget);
+        const sendEmailResponse = await sendEmailCode(mappingUser, email, res, origin, forget);
 
         if (sendEmailResponse) {
           toolService.registerActivity({
@@ -375,7 +383,7 @@ async function sendVerificationMail(res, origin, email, forget) {
             origin: origin
           });
 
-          res.status(200).json({message: 'User accepted', code: 1})
+          res.status(200).json({message: 'User accepted', code: 1});
         }
       }
       else {
@@ -386,7 +394,8 @@ async function sendVerificationMail(res, origin, email, forget) {
           action: 'Resend 2',
           origin: origin
         });
-        res.status(200).json({message: 'User accepted', code: 2})
+
+        res.status(200).json({message: 'User accepted', code: 2});
       }
     }
   }
@@ -395,7 +404,6 @@ async function sendVerificationMail(res, origin, email, forget) {
 router.post('/forgetpwd', async function(req, res, next) {
   logger.info('Reenvio código verificación de delegado por olvido');
   const {origin, email} = req.body;
-  let errors = false;
 
   try {
     await sendVerificationMail(res, origin, email, true);
@@ -405,7 +413,6 @@ router.post('/forgetpwd', async function(req, res, next) {
     logger.error(e.stack);
     res.status(500);
   }
-
 });
 
 router.post('/resendcode', async function(req, res, next) {
@@ -427,7 +434,7 @@ router.post('/register', async function(req, res, next) {
 
   const {origin, email} = req.body;
   let errors = false;
-  let mappingUser, mappingRoles
+  let mappingUser;
 
   try {
     const __ret = await checkUserByEmail(email, res, origin);
@@ -438,13 +445,15 @@ router.post('/register', async function(req, res, next) {
       // if user don't still verified email account
       if (!mappingUser[0].enabled && mappingUser[0].account_Locked) {
         await sendEmailCode(mappingUser, email, res, origin, false);
+
         toolService.registerActivity({
           user_id: mappingUser[0].idUser,
           idPos: mappingUser[0].id_pos,
           action: 'Register 0',
           origin: origin
         });
-        res.status(200).json({message: 'User accepted', code: 0})
+
+        res.status(200).json({message: 'User accepted', code: 0});
       }
       else if (mappingUser[0].enabled && mappingUser[0].account_Locked) {
         // email code has been sended but not verified
@@ -454,7 +463,8 @@ router.post('/register', async function(req, res, next) {
           action: 'Register 1',
           origin: origin
         });
-        res.status(200).json({message: 'User accepted', code: 1})
+
+        res.status(200).json({message: 'User accepted', code: 1});
       }
       else if (mappingUser[0].enabled && !mappingUser[0].account_Locked) {
         // access granted
@@ -464,7 +474,8 @@ router.post('/register', async function(req, res, next) {
           action: 'Register 2',
           origin: origin
         });
-        res.status(200).json({message: 'User accepted', code: 2, idUser: mappingUser[0].idUser})
+
+        res.status(200).json({message: 'User accepted', code: 2, idUser: mappingUser[0].idUser});
       }
     }
   }
@@ -481,7 +492,7 @@ router.get('/verifycode', async function(req, res, next) {
   const {origin} = req.body;
   const {email, uuid} = req.query;
   let errors = false;
-  let mappingUser
+  let mappingUser;
 
   try {
     const __ret = await checkUserByEmail(email, res, origin);
@@ -491,6 +502,7 @@ router.get('/verifycode', async function(req, res, next) {
     if (!errors && uuid !== mappingUser[0].sPassword) {
       logger.error(`${email} UUID received and UUID saved are different`);
       // res.status(403).json({message: 'Error: code not match'});
+
       toolService.registerAudit({
         user_id: mappingUser[0].idUser,
         eventName: 'email code received not match',
@@ -499,13 +511,15 @@ router.get('/verifycode', async function(req, res, next) {
         rowId: mappingUser[0].idUser,
         data: email
       });
+
       errors = true;
     }
 
     if (!errors) {
       await userService.updateUserCodeVerified(null, mappingUser[0].idUser, uuid);
 
-      logger.info(`User ${email} verified with email code`)
+      logger.info(`User ${email} verified with email code`);
+
       toolService.registerActivity({
         user_id: mappingUser[0].idUser,
         idPos: mappingUser[0].id_pos,
@@ -516,12 +530,11 @@ router.get('/verifycode', async function(req, res, next) {
       // todo: make a HTML beauty response
       // res.status(200).json({message: 'code accepted'})
       // res.sendFile(path.join(__dirname, '/../public/setpwd.html'));
-      res.render('setpwd', {username:email, code:uuid});
+      res.render('setpwd', {username: email, code: uuid});
     }
 
-    if ( errors ) {
+    if (errors)
       res.sendFile(path.join(__dirname, '/../public/verifycodeerror.html'));
-    }
   }
   catch (e) {
     logger.error(`Error en el registro del delegado [${email}]`);
@@ -534,9 +547,9 @@ router.get('/verifycode', async function(req, res, next) {
 router.post('/setpwd', async function(req, res, next) {
   logger.info('delegado - establecer contraseña');
 
-  const {origin, idUser, email, pwd, code} = req.body;
+  const {origin, email, pwd, code} = req.body;
   let errors = false;
-  let mappingUser
+  let mappingUser;
 
   try {
     const __ret = await checkUserByEmail(email, res, origin);
@@ -560,6 +573,7 @@ router.post('/setpwd', async function(req, res, next) {
     if (!errors && code !== mappingUser[0].sPassword) {
       logger.error(`${email} UUID received and UUID saved are different`);
       // res.status(403).json({message: 'Error: code not match'});
+
       toolService.registerAudit({
         user_id: mappingUser[0].idUser,
         eventName: 'email code received not match',
@@ -568,17 +582,19 @@ router.post('/setpwd', async function(req, res, next) {
         rowId: mappingUser[0].idUser,
         data: email
       });
+
       errors = true;
     }
 
     if (!errors) {
       const bcrypt = require('bcrypt');
-      let newPwd
+
       await bcrypt.hash(pwd, 10, async function(err, hash) {
         if (!err) {
           await userService.updateUserPwd(null, mappingUser[0].idUser, hash);
 
-          logger.info(`User ${email} has new password`)
+          logger.info(`User ${email} has new password`);
+
           toolService.registerActivity({
             user_id: mappingUser[0].idUser,
             idPos: mappingUser[0].id_pos,
@@ -590,15 +606,15 @@ router.post('/setpwd', async function(req, res, next) {
           res.sendFile(path.join(__dirname, '/../public/setpwdsuccess.html'));
         }
         else {
-          logger.error('Error hashing password')
-          logger.error(err)
+          logger.error('Error hashing password');
+          logger.error(err);
           // res.status(500);
           errors = true;
         }
       });
     }
 
-    if ( errors )
+    if (errors)
       res.sendFile(path.join(__dirname, '/../public/setpwderror.html'));
   }
   catch (e) {

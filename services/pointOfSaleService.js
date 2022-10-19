@@ -127,7 +127,7 @@ where pdpp.ID_PROMOTION = ${idPromotion}`);
 pointOfSaleService.prototype.getListPointOfSaleByDelegado = async function(token, filter = {all: ''}, pageNumber = 1, rowsOfPage = 0) {
   let filter2apply = '';
 
-  if ( filter.quicksearch ) {
+  if (filter.quicksearch) {
     filter2apply += ` and ( pos.CIF like '%${filter.quicksearch}%' 
     or pos.main_zip_code like '%${filter.quicksearch}%'
     or pos.name like '%${filter.quicksearch}%'
@@ -136,11 +136,11 @@ pointOfSaleService.prototype.getListPointOfSaleByDelegado = async function(token
     or pos.contact_person like '%${filter.quicksearch}%'
     or pos.main_city like '%${filter.quicksearch}%'
     or pos.main_state like '%${filter.quicksearch}%'
-    )`
+    )`;
   }
 
-  if ( filter.idPos )
-    filter2apply += ` and pos.id_pos = ${filter.idPos} `
+  if (filter.idPos)
+    filter2apply += ` and pos.id_pos = ${filter.idPos} `;
 
   const response = await mssqlDb.launchQuery('transaction', `select up.ID_USER,
        us.sUsername,
@@ -184,7 +184,7 @@ from PS_DIM_POINT_OF_SALE pos
                where 1 = 1
                  ${filter.invalidTicketsLastMonth || filter.pendingPaymentsLastMonth ? 'and datediff(mm, current_timestamp, wc.WEEK_CLOSURE_DATE) >= -1' : ''}
                  ${filter.invalidTicketsLast3Months || filter.pendingPaymentsLast3Months ? 'and datediff(mm, current_timestamp, wc.WEEK_CLOSURE_DATE) >= -3' : ''}
-                 ${filter.invalidTicketsLastMonth || filter.invalidTicketsLast3Months? 'and pl.INVALID_PRIZES > 0' : ''}
+                 ${filter.invalidTicketsLastMonth || filter.invalidTicketsLast3Months ? 'and pl.INVALID_PRIZES > 0' : ''}
                  ${filter.pendingPaymentsLastMonth || filter.pendingPaymentsLast3Months ? 'and fp.HONOR_DATE is null' : ''}
                  ${filter.pendingPaymentsLastMonth || filter.pendingPaymentsLast3Months ? 'and fp.AMOUNT + fp.BONIFICATION > 0' : ''}
                group by pl.id_pos) myjoin on myjoin.ID_POS = pos.ID_POS
@@ -322,7 +322,7 @@ and pdmp.ID_MANUFACTURER = ${idManufacturer}`);
 pointOfSaleService.prototype.createLinkPointOfSaleToPromotion = async function(token, idManufacturer, idPos, idPromotion, limit) {
   const response = await mssqlDb.launchQuery('transaction', `insert into PS_DIM_POS_PROMOTION (ID_PROMOTION, ID_POS, ID_MESSAGE, POS_LIMIT, POS_MARGIN, DOCUMENT, DOCUMENT_DATE, DOCUMENT_NAME) 
  values 
- (${idPromotion}, ${idPos}, null, ${limit?limit:0}, null, null, null, null);`);
+ (${idPromotion}, ${idPos}, null, ${limit ? limit : 0}, null, null, null, null);`);
 
   toolService.registerAudit({
     user_id: token.idUser,
