@@ -2,6 +2,9 @@ const express = require('express');
 const app = express();
 const path = require('path');
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger.json');
+
 const {logger, sqlConfig} = require('./config');
 
 // Configuraciones
@@ -89,6 +92,10 @@ app.use('/api/deleg/user',   function(req, res, next) {
   logger.debug('Router User');
   next();
 }, userRouter);
+
+// swagger routes
+app.use('/api-docs', swaggerUi.serve);
+app.get('/api-docs', swaggerUi.setup(swaggerDocument));
 
 // app.use('/api/promotions', promotionsRouter);
 // app.use('/api/ticket', ticketRouter);
