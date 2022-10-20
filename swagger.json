@@ -1,6 +1,6 @@
 {
   "openapi" : "3.0.0",
-  "servers" : [  {
+  "servers" : [ {
     "description" : "API GateWay",
     "url" : "https://apigtwpharma.savispain.es"
   } ],
@@ -1805,28 +1805,36 @@
                       "type" : "integer",
                       "example" : 3
                     },
-                    "avg_FAIL_TICKET_DATE" : {
-                      "type" : "integer",
+                    "pct_valid_prizes" : {
+                      "type" : "number",
+                      "example" : 75.64
+                    },
+                    "pct_invalid_prizes" : {
+                      "type" : "number",
+                      "example" : 24.36
+                    },
+                    "pct_FAIL_TICKET_DATE" : {
+                      "type" : "number",
+                      "example" : 19.67
+                    },
+                    "pct_FAIL_POSTMARK" : {
+                      "type" : "number",
                       "example" : 0
                     },
-                    "avg_FAIL_POSTMARK" : {
-                      "type" : "integer",
-                      "example" : 0
+                    "pct_FAIL_PRODUCT" : {
+                      "type" : "number",
+                      "example" : 4904
                     },
-                    "avg_FAIL_PRODUCT" : {
-                      "type" : "integer",
-                      "example" : 1
+                    "pct_FAIL_TICKET_ID" : {
+                      "type" : "number",
+                      "example" : 20.28
                     },
-                    "avg_FAIL_TICKET_ID" : {
-                      "type" : "integer",
-                      "example" : 1
-                    },
-                    "avg_FAIL_PRIVATE_PROMOTION" : {
-                      "type" : "integer",
+                    "pct_FAIL_PRIVATE_PROMOTION" : {
+                      "type" : "number",
                       "example" : 0
                     },
                     "avg_amount_by_prize_and_promo" : {
-                      "type" : "integer",
+                      "type" : "number",
                       "example" : 4.82
                     },
                     "access_token" : {

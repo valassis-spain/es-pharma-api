@@ -428,28 +428,37 @@ where pdm.ID_MANUFACTURER = ${idManufacturer};`);
 
   const response4 = await mssqlDb.launchQuery('transaction', `
 select 
-avg(data.reimboursement) avg_amount_by_promo,
-avg(data.total_prizes) avg_total_prizes_by_promo,
-avg(data.valid_prizes) avg_valid_prizes_by_promo,
-avg(data.invalid_prizes) avg_invalid_prizes_by_promo,
-avg(data.FAIL_TICKET_DATE) avg_FAIL_TICKET_DATE,
-avg(data.FAIL_POSTMARK) avg_FAIL_POSTMARK,
-avg(data.FAIL_PRODUCT) avg_FAIL_PRODUCT,
-avg(data.FAIL_TICKET_ID) avg_FAIL_TICKET_ID,
-avg(data.FAIL_PRIVATE_PROMOTION) avg_FAIL_PRIVATE_PROMOTION,
-avg(data.amount_by_prizes) avg_amount_by_prize_and_promo
+             avg(data.reimboursement)         avg_amount_by_promo,
+             avg(data.total_prizes)           avg_total_prizes_by_promo,
+             avg(data.valid_prizes)           avg_valid_prizes_by_promo,
+             avg(data.invalid_prizes)         avg_invalid_prizes_by_promo,
+             cast(avg(data.pct_valid_prizes) as decimal(10,2))       pct_valid_prizes,
+             cast(avg(data.pct_invalid_prizes)  as decimal(10,2))         pct_invalid_prizes,
+             cast(avg(data.pct_FAIL_TICKET_DATE) as decimal(10,2))       pct_FAIL_TICKET_DATE,
+             cast(avg(data.pct_FAIL_POSTMARK)  as decimal(10,2))         pct_FAIL_POSTMARK,
+             cast(avg(data.pct_FAIL_PRODUCT)  as decimal(10,2))          pct_FAIL_PRODUCT,
+             cast(avg(data.pct_FAIL_TICKET_ID)  as decimal(10,2))        pct_FAIL_TICKET_ID,
+             cast(avg(data.pct_FAIL_PRIVATE_PROMOTION) as decimal(10,2)) pct_FAIL_PRIVATE_PROMOTION,
+             avg(data.amount_by_prizes)       avg_amount_by_prize_and_promo
 from (select pos.ID_POS,
 pdp.PROMOTION_REFERENCE,
-sum(pfp.AMOUNT) + sum(pfp.BONIFICATION) reimboursement,
-sum(pl.TOTAL_PRIZES) total_prizes,
-sum(pl.VALID_PRIZES) valid_prizes,
-sum(pl.INVALID_PRIZES) invalid_prizes,
-sum(pl.FAIL_TICKET_DATE) FAIL_TICKET_DATE,
-sum(pl.FAIL_POSTMARK) FAIL_POSTMARK,
-sum(pl.FAIL_PRODUCT) FAIL_PRODUCT,
-sum(pl.FAIL_TICKET_ID) FAIL_TICKET_ID,
-sum(pl.FAIL_PRIVATE_PROMOTION) FAIL_PRIVATE_PROMOTION,
-(sum(pfp.AMOUNT) + sum(pfp.BONIFICATION)) / sum(pl.VALID_PRIZES) amount_by_prizes
+                   sum(pfp.AMOUNT) + sum(pfp.BONIFICATION)                          reimboursement,
+                   sum(pl.TOTAL_PRIZES)                                             total_prizes,
+                   sum(pl.VALID_PRIZES)                                             valid_prizes,
+                   sum(pl.INVALID_PRIZES)                                           invalid_prizes,
+                   case when sum(pl.total_prizes) = 0 then 0 else cast(100.0 * sum(pl.valid_prizes) / sum(pl.total_prizes) as decimal(10, 2)) end             pct_valid_prizes,
+                   case when sum(pl.total_prizes) = 0 then 0 else cast(100.0 * sum(pl.invalid_prizes) / sum(pl.total_prizes) as decimal(10, 2)) end          pct_invalid_prizes,
+                   case when sum(pl.invalid_prizes) = 0 then 0 else cast(100.0 * sum(pl.FAIL_TICKET_DATE) / sum(pl.invalid_prizes) as decimal(10, 2)) end      pct_FAIL_TICKET_DATE,
+                   case when sum(pl.invalid_prizes) = 0 then 0 else cast(100.0 * sum(pl.FAIL_POSTMARK) / sum(pl.invalid_prizes) as decimal(10, 2))  end        pct_FAIL_POSTMARK,
+                   case when sum(pl.invalid_prizes) = 0 then 0 else cast(100.0 * sum(pl.FAIL_PRODUCT) / sum(pl.invalid_prizes) as decimal(10, 2)) end          pct_FAIL_PRODUCT,
+                   case when sum(pl.invalid_prizes) = 0 then 0 else cast(100.0 * sum(pl.FAIL_TICKET_ID) / sum(pl.invalid_prizes) as decimal(10, 2)) end        pct_FAIL_TICKET_ID,
+                   case when sum(pl.invalid_prizes) = 0 then 0 else cast(100.0 * sum(pl.FAIL_PRIVATE_PROMOTION) / sum(pl.invalid_prizes) as decimal(10, 2)) end pct_FAIL_PRIVATE_PROMOTION,
+                   sum(pl.FAIL_TICKET_DATE)                                         FAIL_TICKET_DATE,
+                   sum(pl.FAIL_POSTMARK)                                            FAIL_POSTMARK,
+                   sum(pl.FAIL_PRODUCT)                                             FAIL_PRODUCT,
+                   sum(pl.FAIL_TICKET_ID)                                           FAIL_TICKET_ID,
+                   sum(pl.FAIL_PRIVATE_PROMOTION)                                   FAIL_PRIVATE_PROMOTION,
+                   case when sum(pl.valid_prizes) = 0 then 0 else (sum(pfp.AMOUNT) + sum(pfp.BONIFICATION)) / sum(pl.VALID_PRIZES) end amount_by_prizes
 from PS_DIM_POINT_OF_SALE pos
 left join PS_DIM_MANUFACTURER pdm on pdm.ID_MANUFACTURER = ${idManufacturer}
 left join PS_DIM_BRAND pdb on pdm.ID_MANUFACTURER = pdb.ID_MANUFACTURER
