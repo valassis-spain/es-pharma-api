@@ -428,10 +428,10 @@ where pdm.ID_MANUFACTURER = ${idManufacturer};`);
 
   const response4 = await mssqlDb.launchQuery('transaction', `
 select 
-             avg(data.reimboursement)         avg_amount_by_promo,
-             avg(data.total_prizes)           avg_total_prizes_by_promo,
-             avg(data.valid_prizes)           avg_valid_prizes_by_promo,
-             avg(data.invalid_prizes)         avg_invalid_prizes_by_promo,
+             cast(avg(data.reimboursement) as decimal(10, 2))         avg_amount_by_promo,
+             cast(avg(data.total_prizes) as decimal(10, 2))           avg_total_prizes_by_promo,
+             cast(avg(data.valid_prizes) as decimal(10, 2))           avg_valid_prizes_by_promo,
+             cast(avg(data.invalid_prizes) as decimal(10, 2))         avg_invalid_prizes_by_promo,
              cast(avg(data.pct_valid_prizes) as decimal(10,2))       pct_valid_prizes,
              cast(avg(data.pct_invalid_prizes)  as decimal(10,2))         pct_invalid_prizes,
              cast(avg(data.pct_FAIL_TICKET_DATE) as decimal(10,2))       pct_FAIL_TICKET_DATE,
@@ -439,7 +439,7 @@ select
              cast(avg(data.pct_FAIL_PRODUCT)  as decimal(10,2))          pct_FAIL_PRODUCT,
              cast(avg(data.pct_FAIL_TICKET_ID)  as decimal(10,2))        pct_FAIL_TICKET_ID,
              cast(avg(data.pct_FAIL_PRIVATE_PROMOTION) as decimal(10,2)) pct_FAIL_PRIVATE_PROMOTION,
-             avg(data.amount_by_prizes)       avg_amount_by_prize_and_promo
+             cast(avg(data.amount_by_prizes) as decimal(10, 2))       avg_amount_by_prize_and_promo
 from (select pos.ID_POS,
 pdp.PROMOTION_REFERENCE,
                    sum(pfp.AMOUNT) + sum(pfp.BONIFICATION)                          reimboursement,
@@ -469,6 +469,21 @@ where pos.ID_POS = ${idPos}
 group by pos.ID_POS, pdp.PROMOTION_REFERENCE) data
 group by data.ID_POS;`);
 
+  const response5 = await mssqlDb.launchQuery('transaction', `
+  select pos.ID_POS,
+       pdb.BRAND_NAME,
+             count(distinct pdp.ID_PROMOTION) total_promotions,
+             count(distinct pl.ID_PROMOTION)  promotions_with_participation,
+             cast(100.0*count(distinct pl.ID_PROMOTION)/count(distinct pdp.ID_PROMOTION) as decimal(10, 2)) pct_promotion_participation
+from PS_DIM_POINT_OF_SALE pos
+               left join PS_DIM_MANUFACTURER pdm on pdm.ID_MANUFACTURER = ${idManufacturer}
+               left join PS_DIM_BRAND pdb on pdm.ID_MANUFACTURER = pdb.ID_MANUFACTURER
+               left join PS_DIM_PROMOTION pdp on pdb.ID_BRAND = pdp.ID_BRAND
+               left join PS_FACT_POS_LETTER pl on pdp.ID_PROMOTION = pl.ID_PROMOTION and pl.ID_POS = pos.ID_POS
+      where pos.ID_POS = ${idPos}
+      and pdp.ID_PROMOTION is not null
+      group by pos.ID_POS, pdb.BRAND_NAME
+  `);
   toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'Get Point of Sale Statistics',
@@ -478,7 +493,7 @@ group by data.ID_POS;`);
     data: idManufacturer
   });
 
-  const total_response = Object.assign({}, response1[0], response2[0], response3[0], response4[0]);
+  const total_response = Object.assign({}, response1[0], response2[0], response3[0], response4[0], {brands:response5});
 
   return total_response;
 };
