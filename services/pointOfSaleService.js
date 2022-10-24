@@ -484,6 +484,7 @@ from PS_DIM_POINT_OF_SALE pos
       and pdp.ID_PROMOTION is not null
       group by pos.ID_POS, pdb.BRAND_NAME
   `);
+
   toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'Get Point of Sale Statistics',
@@ -493,7 +494,7 @@ from PS_DIM_POINT_OF_SALE pos
     data: idManufacturer
   });
 
-  const total_response = Object.assign({}, response1[0], response2[0], response3[0], response4[0], {brands:response5});
+  const total_response = Object.assign({}, response1[0], response2[0], response3[0], response4[0], {brands: response5});
 
   return total_response;
 };
