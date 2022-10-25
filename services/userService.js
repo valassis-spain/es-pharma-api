@@ -90,9 +90,9 @@ where idUser=${idUser}`);
   return response;
 };
 
-userService.prototype.getUserByUsername = async function(token, username) {
+userService.prototype.getUserByUsername = async function(token, username, idPos) {
   const response = await mssqlDb.launchQuery('transaction', `select 
-us.idUser, us.sUsername, us.sPassword, us.id_pos, us.enabled, us.account_Expired, us.account_Locked, us.password_Expired, pos.category, sup.id_supervisor,
+us.idUser, us.sUsername, us.sPassword, ${idPos ? `${idPos}  id_pos` : 'us.id_pos' }, us.enabled, us.account_Expired, us.account_Locked, us.password_Expired, pos.category, sup.id_supervisor,
 case
    when us.ENABLED = 0 and us.ACCOUNT_LOCKED = 1 and len(us.sPassword) > 36 then 1
    else case
@@ -106,7 +106,7 @@ case
                                 state,
 ud.NAME, ud.EMAIL, ud.PHONE                                 
 from users us 
-left join PS_DIM_POINT_OF_SALE pos on pos.id_pos = us.id_pos 
+left join PS_DIM_POINT_OF_SALE pos on pos.id_pos = ${idPos ? idPos : 'us.id_pos' } 
 left join USER_DETAIL ud on us.idUser = ud.ID_USER
 left join SUPERVISOR sup on sup.id_user = us.idUser
 where us.sUsername = '${username}'`);

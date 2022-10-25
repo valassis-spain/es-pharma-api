@@ -7,6 +7,7 @@ const path = require('path');
 const userService = require('../services/userService').create();
 
 const {verifyToken, issueAccessToken, issueRefreshToken} = require('../lib/jwt');
+const pointOfSaleService = require("../services/pointOfSaleService").create;
 // const {randomUUID} = require('crypto');
 const delegadoService = require('../services/delegadoService').create();
 const toolService = require('../services/toolService').create();
@@ -21,12 +22,27 @@ router.post('/', async (req, res) => {
   const bcrypt = require('bcrypt');
   let resStatus = 200;
 
-  const {username, password, origin} = req.body;
+  let {username} = req.body;
+  let {password, origin} = req.body;
+  let remoteIdPos
   let mappingUser;
 
   logger.info(`login page {username:${username}}`);
 
   try {
+    // when parameters comes in query string
+    if (!username || !password) {
+      username = req.query.username;
+      password = req.query.password;
+    }
+
+    // Admin user with remote id pos
+    if (username.indexOf('/') > 0) {
+      let temp = username.split('/');
+      username = temp[0];
+      remoteIdPos = temp[1];
+    }
+
     if (!username || !password) {
       resStatus = 403;
       logger.debug('No username or password received');
@@ -43,7 +59,7 @@ router.post('/', async (req, res) => {
       throw new Error(message01 + ' (L1)');
     }
 
-    mappingUser = await userService.getUserByUsername(null, username);
+    mappingUser = await userService.getUserByUsername(null, username, remoteIdPos);
 
     if (mappingUser.length !== 1) {
       resStatus = 403;
