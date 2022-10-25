@@ -28,6 +28,7 @@ var tokenRouter = require('./routes/tokenRoute');
 var delegadoRouter = require('./routes/delegadoRoute');
 var pointOfSaleRouter = require('./routes/pointOfSaleRoute');
 var userRouter = require('./routes/userRoute');
+var deviceRouter = require('./routes/deviceRoute');
 
 
 app.use('*', function(req, res, next) {
@@ -92,6 +93,12 @@ app.use('/api/deleg/user',   function(req, res, next) {
   logger.debug('Router User');
   next();
 }, userRouter);
+
+// Device's functionalities
+app.use('/api/device',   function(req, res, next) {
+  logger.debug('Router Device');
+  next();
+}, deviceRouter);
 
 // swagger routes
 app.use('/api-docs', swaggerUi.serve);
