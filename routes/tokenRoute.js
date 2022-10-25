@@ -25,11 +25,10 @@ router.get('/verify', async (req, res) => {
   }
 });
 
-router.post('/refresh', async (req, res) => {
+function refreshTokenHandler(res, refresh_token) {
   let resStatus = 200;
 
   try {
-    const {refresh_token} = req.body;
 
     logger.info('Token Refresh requested');
 
@@ -46,8 +45,8 @@ router.post('/refresh', async (req, res) => {
       throw new Error('Not a refresh token!');
     }
 
-    delete(verified['exp']); // expired
-    delete(verified['iss']); // issuer
+    delete (verified['exp']); // expired
+    delete (verified['iss']); // issuer
 
     verified[process.env.ACCESS_CLAIM] = true;
     delete (verified[process.env.REFRESH_CLAIM]);
@@ -70,6 +69,16 @@ router.post('/refresh', async (req, res) => {
     console.error(e.stack);
     res.status(resStatus === 200 ? 500 : resStatus).json({message: `Token refresh error [${e.message}]`});
   }
+}
+
+router.get('/refresh', async (req, res) => {
+  const {refresh_token} = req.query;
+  refreshTokenHandler(res, refresh_token);
+});
+
+router.post('/refresh', async (req, res) => {
+  const {refresh_token} = req.body;
+  refreshTokenHandler(res, refresh_token);
 });
 
 module.exports = router;
