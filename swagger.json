@@ -1,199 +1,184 @@
 {
-  "openapi": "3.0.0",
-  "servers": [
-    {
-      "description": "SwaggerHub API Auto Mocking",
-      "url": "https://virtserver.swaggerhub.com/elpcpp/ApiPharma/1.0.0"
-    },
-    {
-      "description": "API GateWay",
-      "url": "https://apigtwpharma.savispain.es"
-    }
-  ],
-  "info": {
-    "version": "1.0.0",
-    "title": "API EndPoints de gestión de Delegados",
-    "description": "Descripción de los EndPoints publicados"
+  "openapi" : "3.0.0",
+  "servers" : [ {
+    "description" : "SwaggerHub API Auto Mocking",
+    "url" : "https://virtserver.swaggerhub.com/elpcpp/ApiPharma/1.0.0"
+  }, {
+    "description" : "API GateWay",
+    "url" : "https://apigtwpharma.savispain.es"
+  } ],
+  "info" : {
+    "version" : "1.0.0",
+    "title" : "API EndPoints de gestión de Delegados",
+    "description" : "Descripción de los EndPoints publicados"
   },
-  "security": [
-    {
-      "accessCode": [
-        "read",
-        "write"
-      ]
-    }
-  ],
-  "tags": [
-    {
-      "name": "authenticate",
-      "description": "Funciones de autenticación"
-    },
-    {
-      "name": "token",
-      "description": "Funciones del token"
-    },
-    {
-      "name": "Delegados",
-      "description": "Funciones de delegados y supervisores"
-    },
-    {
-      "name": "Puntos de Venta",
-      "description": "Funciones de puntos de venta"
-    }
-  ],
-  "paths": {
-    "/api/deleg/authenticate": {
-      "post": {
-        "description": "Login de usuario",
-        "tags": [
-          "authenticate"
-        ],
-        "summary": "Autenticación de usuarios",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "username": {
-                    "type": "string",
-                    "example": "supervisor002@savispain.es"
+  "security" : [ {
+    "accessCode" : [ "read", "write" ]
+  } ],
+  "tags" : [ {
+    "name" : "token",
+    "description" : "Funciones del token"
+  }, {
+    "name" : "Delegados - authenticate",
+    "description" : "Funciones de autenticación"
+  }, {
+    "name" : "Delegados",
+    "description" : "Funciones de delegados y supervisores"
+  }, {
+    "name" : "Delegados - Puntos de Venta",
+    "description" : "Funciones de puntos de venta"
+  }, {
+    "name" : "Device",
+    "description" : "Funciones de dispositivos"
+  } ],
+  "paths" : {
+    "/api/deleg/authenticate" : {
+      "post" : {
+        "description" : "Login de usuario",
+        "tags" : [ "Delegados - authenticate" ],
+        "summary" : "Autenticación de usuarios",
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "username" : {
+                    "type" : "string",
+                    "example" : "supervisor002@savispain.es"
                   },
-                  "password": {
-                    "type": "string",
-                    "example": "temporal"
+                  "password" : {
+                    "type" : "string",
+                    "example" : "temporal"
                   }
                 }
               }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Acceso permitido",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id_pos": {
-                      "type": "integer",
-                      "example": 99999
+        "responses" : {
+          "200" : {
+            "description" : "Acceso permitido",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "id_pos" : {
+                      "type" : "integer",
+                      "example" : 99999
                     },
-                    "id_user": {
-                      "type": "integer",
-                      "example": 104425
+                    "id_user" : {
+                      "type" : "integer",
+                      "example" : 104425
                     },
-                    "status": {
-                      "type": "string",
-                      "example": "NORMAL"
+                    "status" : {
+                      "type" : "string",
+                      "example" : "NORMAL"
                     },
-                    "name": {
-                      "type": "string",
-                      "example": "delegado ejemplo"
+                    "name" : {
+                      "type" : "string",
+                      "example" : "delegado ejemplo"
                     },
-                    "phone": {
-                      "type": "string",
-                      "example": "987654321"
+                    "phone" : {
+                      "type" : "string",
+                      "example" : "987654321"
                     },
-                    "email": {
-                      "type": "string",
-                      "example": "supervisor002@savispain.es"
+                    "email" : {
+                      "type" : "string",
+                      "example" : "supervisor002@savispain.es"
                     },
-                    "roles": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "rol": {
-                            "type": "string"
+                    "roles" : {
+                      "type" : "array",
+                      "items" : {
+                        "type" : "object",
+                        "properties" : {
+                          "rol" : {
+                            "type" : "string"
                           }
                         }
                       },
-                      "example": [
-                        {
-                          "rol": "ROLE_SUPERVISOR"
-                        },
-                        {
-                          "rol": "ROLE_USER"
-                        }
-                      ]
+                      "example" : [ {
+                        "rol" : "ROLE_SUPERVISOR"
+                      }, {
+                        "rol" : "ROLE_USER"
+                      } ]
                     },
-                    "manufacturers": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id_manufacturer": {
-                            "type": "integer",
-                            "example": 101
+                    "manufacturers" : {
+                      "type" : "array",
+                      "items" : {
+                        "type" : "object",
+                        "properties" : {
+                          "id_manufacturer" : {
+                            "type" : "integer",
+                            "example" : 101
                           },
-                          "manufacturer_name": {
-                            "type": "string",
-                            "example": "L OREAL ESPAÑA, S.A."
+                          "manufacturer_name" : {
+                            "type" : "string",
+                            "example" : "L OREAL ESPAÑA, S.A."
                           }
                         }
                       }
                     },
-                    "access_token": {
-                      "type": "string",
-                      "example": "eyJhbGciOi..."
+                    "access_token" : {
+                      "type" : "string",
+                      "example" : "eyJhbGciOi..."
                     },
-                    "refresh_token": {
-                      "type": "string",
-                      "example": "eyJhbGciOi..."
+                    "refresh_token" : {
+                      "type" : "string",
+                      "example" : "eyJhbGciOi..."
                     },
-                    "country": {
-                      "type": "string",
-                      "example": "es"
+                    "country" : {
+                      "type" : "string",
+                      "example" : "es"
                     }
                   }
                 }
               }
             }
           },
-          "400": {
-            "description": "Invalid request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "message" : {
+                      "type" : "string"
                     }
                   }
                 }
               }
             }
           },
-          "403": {
-            "description": "Acceso no autorizado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Invalid credentials!"
+          "403" : {
+            "description" : "Acceso no autorizado",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "message" : {
+                      "type" : "string",
+                      "example" : "Invalid credentials!"
                     }
                   }
                 }
               }
             }
           },
-          "500": {
-            "description": "Error interno",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "SQL Error"
+          "500" : {
+            "description" : "Error interno",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "SQL Error"
                     }
                   }
                 }
@@ -203,79 +188,75 @@
         }
       }
     },
-    "/api/token/verify": {
-      "get": {
-        "tags": [
-          "token"
-        ],
-        "summary": "Verificación del token de acceso",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "access_token",
-            "description": "Token para verificar",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "example": "eyJhbGciOi..."
-            }
+    "/api/token/verify" : {
+      "get" : {
+        "tags" : [ "token" ],
+        "summary" : "Verificación del token de acceso",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "access_token",
+          "description" : "Token para verificar",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "example" : "eyJhbGciOi..."
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Acceso permitido",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "idPos": {
-                      "type": "integer",
-                      "example": 99999
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Acceso permitido",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "idPos" : {
+                      "type" : "integer",
+                      "example" : 99999
                     },
-                    "idUser": {
-                      "type": "integer",
-                      "example": 104425
+                    "idUser" : {
+                      "type" : "integer",
+                      "example" : 104425
                     },
-                    "country": {
-                      "type": "string",
-                      "example": "es"
+                    "country" : {
+                      "type" : "string",
+                      "example" : "es"
                     },
-                    "http://pharma.savispain.es/access_token": {
-                      "type": "boolean",
-                      "example": true
+                    "http://pharma.savispain.es/access_token" : {
+                      "type" : "boolean",
+                      "example" : true
                     },
-                    "sub": {
-                      "type": "string",
-                      "example": "supervisor002@savispain.es"
+                    "sub" : {
+                      "type" : "string",
+                      "example" : "supervisor002@savispain.es"
                     },
-                    "iat": {
-                      "type": "integer",
-                      "example": 1665736057
+                    "iat" : {
+                      "type" : "integer",
+                      "example" : 1665736057
                     },
-                    "exp": {
-                      "type": "integer",
-                      "example": 1665743257
+                    "exp" : {
+                      "type" : "integer",
+                      "example" : 1665743257
                     },
-                    "iss": {
-                      "type": "string",
-                      "example": "https://pharma.savispain.es"
+                    "iss" : {
+                      "type" : "string",
+                      "example" : "https://pharma.savispain.es"
                     }
                   }
                 }
               }
             }
           },
-          "500": {
-            "description": "Error interno",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Token verify error [jwt expired]"
+          "500" : {
+            "description" : "Error interno",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "message" : {
+                      "type" : "string",
+                      "example" : "Token verify error [jwt expired]"
                     }
                   }
                 }
@@ -285,59 +266,57 @@
         }
       }
     },
-    "/api/token/refresh": {
-      "post": {
-        "tags": [
-          "token"
-        ],
-        "summary": "Refresco del token de acceso",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "refresh_token": {
-                    "type": "string",
-                    "example": "eyJhbGciOi..."
+    "/api/token/refresh" : {
+      "post" : {
+        "tags" : [ "token" ],
+        "summary" : "Refresco del token de acceso",
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "refresh_token" : {
+                    "type" : "string",
+                    "example" : "eyJhbGciOi..."
                   }
                 }
               }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Token de refesco correcto",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "access_token": {
-                      "type": "string",
-                      "example": "eyJhbGciOi..."
+        "responses" : {
+          "200" : {
+            "description" : "Token de refesco correcto",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "access_token" : {
+                      "type" : "string",
+                      "example" : "eyJhbGciOi..."
                     },
-                    "refresh_token": {
-                      "type": "string",
-                      "example": "eyJhbGciOi..."
+                    "refresh_token" : {
+                      "type" : "string",
+                      "example" : "eyJhbGciOi..."
                     }
                   }
                 }
               }
             }
           },
-          "500": {
-            "description": "Error interno",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Token refresh error [jwt expired]"
+          "500" : {
+            "description" : "Error interno",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "message" : {
+                      "type" : "string",
+                      "example" : "Token refresh error [jwt expired]"
                     }
                   }
                 }
@@ -347,98 +326,96 @@
         }
       }
     },
-    "/api/deleg/authenticate/register": {
-      "post": {
-        "description": "Primer paso en el registro de un nuevo usuario",
-        "tags": [
-          "authenticate"
-        ],
-        "summary": "Registro de un nuevo usuario",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "email": {
-                    "type": "string",
-                    "example": "deleg001@savispain.es"
+    "/api/deleg/authenticate/register" : {
+      "post" : {
+        "description" : "Primer paso en el registro de un nuevo usuario",
+        "tags" : [ "Delegados - authenticate" ],
+        "summary" : "Registro de un nuevo usuario",
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "email" : {
+                    "type" : "string",
+                    "example" : "deleg001@savispain.es"
                   }
                 }
               }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Usuario aceptado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "User accepted"
+        "responses" : {
+          "200" : {
+            "description" : "Usuario aceptado",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "message" : {
+                      "type" : "string",
+                      "example" : "User accepted"
                     },
-                    "code": {
-                      "type": "integer",
-                      "example": 0,
-                      "description": "valor 0 valor 1 valor 2 valor 3"
+                    "code" : {
+                      "type" : "integer",
+                      "example" : 0,
+                      "description" : "valor 0 valor 1 valor 2 valor 3"
                     },
-                    "idUser": {
-                      "type": "integer",
-                      "example": 104425,
-                      "nullable": true
+                    "idUser" : {
+                      "type" : "integer",
+                      "example" : 104425,
+                      "nullable" : true
                     }
                   }
                 }
               }
             }
           },
-          "400": {
-            "description": "Error en petición",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "missing required field email"
+          "400" : {
+            "description" : "Error en petición",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "message" : {
+                      "type" : "string",
+                      "example" : "missing required field email"
                     }
                   }
                 }
               }
             }
           },
-          "403": {
-            "description": "Prohibido",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "username not found"
+          "403" : {
+            "description" : "Prohibido",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "message" : {
+                      "type" : "string",
+                      "example" : "username not found"
                     }
                   }
                 }
               }
             }
           },
-          "500": {
-            "description": "Error interno",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "SQL Error"
+          "500" : {
+            "description" : "Error interno",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "SQL Error"
                     }
                   }
                 }
@@ -448,92 +425,90 @@
         }
       }
     },
-    "/api/deleg/authenticate/resendcode": {
-      "post": {
-        "description": "Solicitud de reenvio de emai de verificación de correo electrónico",
-        "tags": [
-          "authenticate"
-        ],
-        "summary": "Volver a enviar email de verificación de cuenta",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "email": {
-                    "type": "string",
-                    "example": "deleg001@savispain.es"
+    "/api/deleg/authenticate/resendcode" : {
+      "post" : {
+        "description" : "Solicitud de reenvio de emai de verificación de correo electrónico",
+        "tags" : [ "Delegados - authenticate" ],
+        "summary" : "Volver a enviar email de verificación de cuenta",
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "email" : {
+                    "type" : "string",
+                    "example" : "deleg001@savispain.es"
                   }
                 }
               }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Usuario aceptado, se procede a reenviar el correo de verificación",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "User accepted"
+        "responses" : {
+          "200" : {
+            "description" : "Usuario aceptado, se procede a reenviar el correo de verificación",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "message" : {
+                      "type" : "string",
+                      "example" : "User accepted"
                     },
-                    "code": {
-                      "type": "integer",
-                      "example": 1
+                    "code" : {
+                      "type" : "integer",
+                      "example" : 1
                     }
                   }
                 }
               }
             }
           },
-          "400": {
-            "description": "Error en petición",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "missing required field email"
+          "400" : {
+            "description" : "Error en petición",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "message" : {
+                      "type" : "string",
+                      "example" : "missing required field email"
                     }
                   }
                 }
               }
             }
           },
-          "403": {
-            "description": "Prohibido",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "username not found"
+          "403" : {
+            "description" : "Prohibido",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "message" : {
+                      "type" : "string",
+                      "example" : "username not found"
                     }
                   }
                 }
               }
             }
           },
-          "500": {
-            "description": "Error interno",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "SQL Error"
+          "500" : {
+            "description" : "Error interno",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "SQL Error"
                     }
                   }
                 }
@@ -543,92 +518,90 @@
         }
       }
     },
-    "/api/deleg/authenticate/forgetpwd": {
-      "post": {
-        "description": "Inicio del procedimiento de recuperación de contraseña",
-        "tags": [
-          "authenticate"
-        ],
-        "summary": "procedimiento de olvido de contraseña",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "email": {
-                    "type": "string",
-                    "example": "deleg001@savispain.es"
+    "/api/deleg/authenticate/forgetpwd" : {
+      "post" : {
+        "description" : "Inicio del procedimiento de recuperación de contraseña",
+        "tags" : [ "Delegados - authenticate" ],
+        "summary" : "procedimiento de olvido de contraseña",
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "email" : {
+                    "type" : "string",
+                    "example" : "deleg001@savispain.es"
                   }
                 }
               }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Token de refesco correcto",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "User accepted"
+        "responses" : {
+          "200" : {
+            "description" : "Token de refesco correcto",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "message" : {
+                      "type" : "string",
+                      "example" : "User accepted"
                     },
-                    "code": {
-                      "type": "integer",
-                      "example": 2
+                    "code" : {
+                      "type" : "integer",
+                      "example" : 2
                     }
                   }
                 }
               }
             }
           },
-          "400": {
-            "description": "Error en petición",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "missing required field email"
+          "400" : {
+            "description" : "Error en petición",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "message" : {
+                      "type" : "string",
+                      "example" : "missing required field email"
                     }
                   }
                 }
               }
             }
           },
-          "403": {
-            "description": "Prohibido",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "username not found"
+          "403" : {
+            "description" : "Prohibido",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "message" : {
+                      "type" : "string",
+                      "example" : "username not found"
                     }
                   }
                 }
               }
             }
           },
-          "500": {
-            "description": "Error interno",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "SQL Error"
+          "500" : {
+            "description" : "Error interno",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "SQL Error"
                     }
                   }
                 }
@@ -638,355 +611,353 @@
         }
       }
     },
-    "/api/deleg/delegado/read": {
-      "post": {
-        "tags": [
-          "Delegados"
-        ],
-        "summary": "Consulta de datos de Delegado",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "access_token": {
-                    "type": "string",
-                    "example": "eyJhbGciOi..."
+    "/api/deleg/delegado/read" : {
+      "post" : {
+        "tags" : [ "Delegados" ],
+        "summary" : "Consulta de datos de Delegado",
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "access_token" : {
+                    "type" : "string",
+                    "example" : "eyJhbGciOi..."
                   },
-                  "idManufacturer": {
-                    "type": "integer",
-                    "example": 101
+                  "idManufacturer" : {
+                    "type" : "integer",
+                    "example" : 101
                   }
                 }
               }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Token aceptado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer",
-                      "example": 20
+        "responses" : {
+          "200" : {
+            "description" : "Token aceptado",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "id" : {
+                      "type" : "integer",
+                      "example" : 20
                     },
-                    "id_user": {
-                      "type": "integer",
-                      "example": 104425
+                    "id_user" : {
+                      "type" : "integer",
+                      "example" : 104425
                     },
-                    "name": {
-                      "type": "string",
-                      "example": "delegado ejemplo"
+                    "name" : {
+                      "type" : "string",
+                      "example" : "delegado ejemplo"
                     },
-                    "email": {
-                      "type": "string",
-                      "example": "supervisor002@savispain.es"
+                    "email" : {
+                      "type" : "string",
+                      "example" : "supervisor002@savispain.es"
                     },
-                    "phone": {
-                      "type": "string",
-                      "example": "987654321"
+                    "phone" : {
+                      "type" : "string",
+                      "example" : "987654321"
                     },
-                    "address": {
-                      "type": "string",
-                      "example": "C/ Gonzalo Chacón, 5"
+                    "address" : {
+                      "type" : "string",
+                      "example" : "C/ Gonzalo Chacón, 5"
                     },
-                    "city": {
-                      "type": "string",
-                      "example": "Madrid"
+                    "city" : {
+                      "type" : "string",
+                      "example" : "Madrid"
                     },
-                    "zip_code": {
-                      "type": "integer",
-                      "example": 28300
+                    "zip_code" : {
+                      "type" : "integer",
+                      "example" : 28300
                     },
-                    "state": {
-                      "type": "string",
-                      "example": "Madrid"
+                    "state" : {
+                      "type" : "string",
+                      "example" : "Madrid"
                     },
-                    "country": {
-                      "type": "string",
-                      "example": "es"
+                    "country" : {
+                      "type" : "string",
+                      "example" : "es"
                     },
-                    "removed_at": {
-                      "type": "string",
-                      "example": null,
-                      "nullable": true
+                    "removed_at" : {
+                      "type" : "string",
+                      "example" : null,
+                      "nullable" : true
                     },
-                    "info": {
-                      "type": "object",
-                      "properties": {
-                        "idUser": {
-                          "type": "integer",
-                          "example": 104425
+                    "info" : {
+                      "type" : "object",
+                      "properties" : {
+                        "idUser" : {
+                          "type" : "integer",
+                          "example" : 104425
                         },
-                        "sUsername": {
-                          "type": "string",
-                          "example": "supervisor002@savispain.es"
+                        "sUsername" : {
+                          "type" : "string",
+                          "example" : "supervisor002@savispain.es"
                         },
-                        "id_pos": {
-                          "type": "integer",
-                          "example": 99999
+                        "id_pos" : {
+                          "type" : "integer",
+                          "example" : 99999
                         },
-                        "category": {
-                          "type": "string",
-                          "example": "NORMAL"
+                        "category" : {
+                          "type" : "string",
+                          "example" : "NORMAL"
                         },
-                        "state": {
-                          "type": "integer",
-                          "example": 4
+                        "state" : {
+                          "type" : "integer",
+                          "example" : 4
                         },
-                        "name": {
-                          "type": "string",
-                          "example": "delegado ejemplo"
+                        "name" : {
+                          "type" : "string",
+                          "example" : "delegado ejemplo"
                         },
-                        "email": {
-                          "type": "string",
-                          "example": "supervisor002@savispain.es"
+                        "email" : {
+                          "type" : "string",
+                          "example" : "supervisor002@savispain.es"
                         },
-                        "phone": {
-                          "type": "string",
-                          "example": "987654321"
+                        "phone" : {
+                          "type" : "string",
+                          "example" : "987654321"
                         },
-                        "removed_at": {
-                          "type": "string",
-                          "example": null,
-                          "nullable": true
+                        "removed_at" : {
+                          "type" : "string",
+                          "example" : null,
+                          "nullable" : true
                         }
                       }
                     },
-                    "delegados": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "idUser": {
-                            "type": "integer",
-                            "example": 104419
+                    "delegados" : {
+                      "type" : "array",
+                      "items" : {
+                        "type" : "object",
+                        "properties" : {
+                          "idUser" : {
+                            "type" : "integer",
+                            "example" : 104419
                           },
-                          "sUsername": {
-                            "type": "string",
-                            "example": "deleg006@savispain.es"
+                          "sUsername" : {
+                            "type" : "string",
+                            "example" : "deleg006@savispain.es"
                           },
-                          "enabled": {
-                            "type": "boolean",
-                            "example": false
+                          "enabled" : {
+                            "type" : "boolean",
+                            "example" : false
                           },
-                          "ACCOUNT_LOCKED": {
-                            "type": "boolean",
-                            "example": true
+                          "ACCOUNT_LOCKED" : {
+                            "type" : "boolean",
+                            "example" : true
                           },
-                          "id_user": {
-                            "type": "integer",
-                            "example": 104419
+                          "id_user" : {
+                            "type" : "integer",
+                            "example" : 104419
                           },
-                          "name": {
-                            "type": "string",
-                            "example": "deleg006"
+                          "name" : {
+                            "type" : "string",
+                            "example" : "deleg006"
                           },
-                          "email": {
-                            "type": "string",
-                            "example": "deleg006@savispain.es"
+                          "email" : {
+                            "type" : "string",
+                            "example" : "deleg006@savispain.es"
                           },
-                          "phone": {
-                            "type": "string",
-                            "example": null
+                          "phone" : {
+                            "type" : "string",
+                            "example" : null
                           },
-                          "removed_at": {
-                            "type": "string",
-                            "example": null
+                          "removed_at" : {
+                            "type" : "string",
+                            "example" : null
                           },
-                          "state": {
-                            "type": "integer",
-                            "example": 1
+                          "state" : {
+                            "type" : "integer",
+                            "example" : 1
                           },
-                          "pos_linked_with_promo": {
-                            "type": "integer",
-                            "example": 0
+                          "pos_linked_with_promo" : {
+                            "type" : "integer",
+                            "example" : 0
                           },
-                          "pos_linked": {
-                            "type": "integer",
-                            "example": 0
+                          "pos_linked" : {
+                            "type" : "integer",
+                            "example" : 0
                           }
                         }
                       }
                     },
-                    "pos": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "integer",
-                          "example": 0
+                    "pos" : {
+                      "type" : "object",
+                      "properties" : {
+                        "page" : {
+                          "type" : "integer",
+                          "example" : 0
                         },
-                        "rowsOfPage": {
-                          "type": "integer",
-                          "example": 20
+                        "rowsOfPage" : {
+                          "type" : "integer",
+                          "example" : 20
                         },
-                        "totalRows": {
-                          "type": "integer",
-                          "example": 123
+                        "totalRows" : {
+                          "type" : "integer",
+                          "example" : 123
                         },
-                        "pointOfSale": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "ID_USER": {
-                                "type": "integer",
-                                "example": 104419
+                        "pointOfSale" : {
+                          "type" : "array",
+                          "items" : {
+                            "type" : "object",
+                            "properties" : {
+                              "ID_USER" : {
+                                "type" : "integer",
+                                "example" : 104419
                               },
-                              "sUsername": {
-                                "type": "string",
-                                "example": "deleg006@savispain.es"
+                              "sUsername" : {
+                                "type" : "string",
+                                "example" : "deleg006@savispain.es"
                               },
-                              "ID_POS": {
-                                "type": "integer",
-                                "example": 101310
+                              "ID_POS" : {
+                                "type" : "integer",
+                                "example" : 101310
                               },
-                              "manufacturer_code": {
-                                "type": "string",
-                                "example": "101101310"
+                              "manufacturer_code" : {
+                                "type" : "string",
+                                "example" : "101101310"
                               },
-                              "NAME": {
-                                "type": "string",
-                                "example": "FARMADEMO 001, S.L."
+                              "NAME" : {
+                                "type" : "string",
+                                "example" : "FARMADEMO 001, S.L."
                               },
-                              "CIF": {
-                                "type": "string",
-                                "example": "B00000001"
+                              "CIF" : {
+                                "type" : "string",
+                                "example" : "B00000001"
                               },
-                              "EMAIL": {
-                                "type": "string",
-                                "example": "farmademo001@savispain.es"
+                              "EMAIL" : {
+                                "type" : "string",
+                                "example" : "farmademo001@savispain.es"
                               },
-                              "PHONE": {
-                                "type": "string",
-                                "example": "987654301"
+                              "PHONE" : {
+                                "type" : "string",
+                                "example" : "987654301"
                               },
-                              "CELL_PHONE": {
-                                "type": "string",
-                                "example": null
+                              "CELL_PHONE" : {
+                                "type" : "string",
+                                "example" : null
                               },
-                              "CONTACT_PERSON": {
-                                "type": "string",
-                                "example": "Farma Demo 001"
+                              "CONTACT_PERSON" : {
+                                "type" : "string",
+                                "example" : "Farma Demo 001"
                               },
-                              "MAILING_NOTIFICATION": {
-                                "type": "boolean",
-                                "example": true
+                              "MAILING_NOTIFICATION" : {
+                                "type" : "boolean",
+                                "example" : true
                               },
-                              "MAIN_STREET": {
-                                "type": "string",
-                                "example": "Calle Demo 001"
+                              "MAIN_STREET" : {
+                                "type" : "string",
+                                "example" : "Calle Demo 001"
                               },
-                              "MAIN_CITY": {
-                                "type": "string",
-                                "example": "ARANJUEZ"
+                              "MAIN_CITY" : {
+                                "type" : "string",
+                                "example" : "ARANJUEZ"
                               },
-                              "MAIN_STATE": {
-                                "type": "string",
-                                "example": "MADRID"
+                              "MAIN_STATE" : {
+                                "type" : "string",
+                                "example" : "MADRID"
                               },
-                              "MAIN_ZIP_CODE": {
-                                "type": "integer",
-                                "example": 28300
+                              "MAIN_ZIP_CODE" : {
+                                "type" : "integer",
+                                "example" : 28300
                               },
-                              "POS_APP": {
-                                "type": "boolean",
-                                "example": null
+                              "POS_APP" : {
+                                "type" : "boolean",
+                                "example" : null
                               },
-                              "CATEGORY": {
-                                "type": "string",
-                                "example": "NORMAL"
+                              "CATEGORY" : {
+                                "type" : "string",
+                                "example" : "NORMAL"
                               },
-                              "REMOTE_STORE_ID": {
-                                "type": "string",
-                                "example": "987654301"
+                              "REMOTE_STORE_ID" : {
+                                "type" : "string",
+                                "example" : "987654301"
                               },
-                              "COUNTRY": {
-                                "type": "string",
-                                "example": "ES"
+                              "COUNTRY" : {
+                                "type" : "string",
+                                "example" : "ES"
                               },
-                              "PAGE": {
-                                "type": "integer",
-                                "example": 1
+                              "PAGE" : {
+                                "type" : "integer",
+                                "example" : 1
                               },
-                              "ROWS_OF_PAGE": {
-                                "type": "integer",
-                                "example": 0
+                              "ROWS_OF_PAGE" : {
+                                "type" : "integer",
+                                "example" : 0
                               },
-                              "letters": {
-                                "type": "integer",
-                                "example": 4
+                              "letters" : {
+                                "type" : "integer",
+                                "example" : 4
                               },
-                              "invalid_prizes": {
-                                "type": "integer",
-                                "example": 4
+                              "invalid_prizes" : {
+                                "type" : "integer",
+                                "example" : 4
                               },
-                              "honor_date": {
-                                "type": "string",
-                                "example": null
+                              "honor_date" : {
+                                "type" : "string",
+                                "example" : null
                               },
-                              "amount": {
-                                "type": "integer",
-                                "example": 109.75
+                              "amount" : {
+                                "type" : "integer",
+                                "example" : 109.75
                               }
                             }
                           }
                         }
                       }
                     },
-                    "roles": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "rol": {
-                            "type": "string",
-                            "example": "ROLE_SUPERVISOR"
+                    "roles" : {
+                      "type" : "array",
+                      "items" : {
+                        "type" : "object",
+                        "properties" : {
+                          "rol" : {
+                            "type" : "string",
+                            "example" : "ROLE_SUPERVISOR"
                           }
                         }
                       }
                     },
-                    "access_token": {
-                      "type": "string",
-                      "example": "eyJhbGciOi..."
+                    "access_token" : {
+                      "type" : "string",
+                      "example" : "eyJhbGciOi..."
                     }
                   }
                 }
               }
             }
           },
-          "401": {
-            "description": "No autorizado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "TokenExpiredError"
+          "401" : {
+            "description" : "No autorizado",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "TokenExpiredError"
                     }
                   }
                 }
               }
             }
           },
-          "500": {
-            "description": "Error interno",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "SQL Error"
+          "500" : {
+            "description" : "Error interno",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "SQL Error"
                     }
                   }
                 }
@@ -996,199 +967,197 @@
         }
       }
     },
-    "/api/deleg/pos/": {
-      "post": {
-        "tags": [
-          "Puntos de Venta"
-        ],
-        "summary": "Obtener lista de puntos de venta",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "access_token": {
-                    "type": "string",
-                    "example": "eyJhbGciOi..."
+    "/api/deleg/pos/" : {
+      "post" : {
+        "tags" : [ "Delegados -Puntos de Venta" ],
+        "summary" : "Obtener lista de puntos de venta",
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "access_token" : {
+                    "type" : "string",
+                    "example" : "eyJhbGciOi..."
                   },
-                  "idDelegado": {
-                    "type": "integer",
-                    "example": 101314
+                  "idDelegado" : {
+                    "type" : "integer",
+                    "example" : 101314
                   },
-                  "idPos": {
-                    "type": "integer",
-                    "example": 101314
+                  "idPos" : {
+                    "type" : "integer",
+                    "example" : 101314
                   },
-                  "idManufacturer": {
-                    "type": "integer",
-                    "example": 101
+                  "idManufacturer" : {
+                    "type" : "integer",
+                    "example" : 101
                   },
-                  "quicksearch": {
-                    "type": "string",
-                    "example": "farmademo002"
+                  "quicksearch" : {
+                    "type" : "string",
+                    "example" : "farmademo002"
                   },
-                  "pendingPaymentsLast3Months": {
-                    "type": "integer",
-                    "example": 1
+                  "pendingPaymentsLast3Months" : {
+                    "type" : "integer",
+                    "example" : 1
                   },
-                  "pendingPaymentsLastMonth": {
-                    "type": "integer",
-                    "example": 0
+                  "pendingPaymentsLastMonth" : {
+                    "type" : "integer",
+                    "example" : 0
                   },
-                  "invalidTicketsLast3Months": {
-                    "type": "integer",
-                    "example": 0
+                  "invalidTicketsLast3Months" : {
+                    "type" : "integer",
+                    "example" : 0
                   },
-                  "invalidTicketsLastMonth": {
-                    "type": "integer",
-                    "example": 0
+                  "invalidTicketsLastMonth" : {
+                    "type" : "integer",
+                    "example" : 0
                   },
-                  "page": {
-                    "type": "integer",
-                    "example": 0
+                  "page" : {
+                    "type" : "integer",
+                    "example" : 0
                   }
                 }
               }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Listado de Puntos de venta",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "pointOfSale": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "ID_POS": {
-                            "type": "integer",
-                            "example": 101312
+        "responses" : {
+          "200" : {
+            "description" : "Listado de Puntos de venta",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "pointOfSale" : {
+                      "type" : "array",
+                      "items" : {
+                        "type" : "object",
+                        "properties" : {
+                          "ID_POS" : {
+                            "type" : "integer",
+                            "example" : 101312
                           },
-                          "ID_USER": {
-                            "type": "integer",
-                            "example": 104419
+                          "ID_USER" : {
+                            "type" : "integer",
+                            "example" : 104419
                           },
-                          "sUsername": {
-                            "type": "string",
-                            "example": "deleg006@savispain.es"
+                          "sUsername" : {
+                            "type" : "string",
+                            "example" : "deleg006@savispain.es"
                           },
-                          "manufacturer_code": {
-                            "type": "string",
-                            "example": "121212"
+                          "manufacturer_code" : {
+                            "type" : "string",
+                            "example" : "121212"
                           },
-                          "NAME": {
-                            "type": "string",
-                            "example": "FARMADEMO 003, S.L."
+                          "NAME" : {
+                            "type" : "string",
+                            "example" : "FARMADEMO 003, S.L."
                           },
-                          "CIF": {
-                            "type": "string",
-                            "example": "B00000003"
+                          "CIF" : {
+                            "type" : "string",
+                            "example" : "B00000003"
                           },
-                          "EMAIL": {
-                            "type": "string",
-                            "example": "farmademo003@savispain.es"
+                          "EMAIL" : {
+                            "type" : "string",
+                            "example" : "farmademo003@savispain.es"
                           },
-                          "PHONE": {
-                            "type": "string",
-                            "example": "987654303"
+                          "PHONE" : {
+                            "type" : "string",
+                            "example" : "987654303"
                           },
-                          "CELL_PHONE": {
-                            "type": "string",
-                            "example": null
+                          "CELL_PHONE" : {
+                            "type" : "string",
+                            "example" : null
                           },
-                          "CONTACT_PERSON": {
-                            "type": "string",
-                            "example": "Farma Demo 003"
+                          "CONTACT_PERSON" : {
+                            "type" : "string",
+                            "example" : "Farma Demo 003"
                           },
-                          "MAILING_NOTIFICATION": {
-                            "type": "boolean",
-                            "example": true
+                          "MAILING_NOTIFICATION" : {
+                            "type" : "boolean",
+                            "example" : true
                           },
-                          "MAIN_STREET": {
-                            "type": "string",
-                            "example": "Calle Demo 003"
+                          "MAIN_STREET" : {
+                            "type" : "string",
+                            "example" : "Calle Demo 003"
                           },
-                          "MAIN_CITY": {
-                            "type": "string",
-                            "example": "ARANJUEZ"
+                          "MAIN_CITY" : {
+                            "type" : "string",
+                            "example" : "ARANJUEZ"
                           },
-                          "MAIN_STATE": {
-                            "type": "string",
-                            "example": "MADRID"
+                          "MAIN_STATE" : {
+                            "type" : "string",
+                            "example" : "MADRID"
                           },
-                          "MAIN_ZIP_CODE": {
-                            "type": "integer",
-                            "example": 28300
+                          "MAIN_ZIP_CODE" : {
+                            "type" : "integer",
+                            "example" : 28300
                           },
-                          "POS_APP": {
-                            "type": "boolean",
-                            "example": null
+                          "POS_APP" : {
+                            "type" : "boolean",
+                            "example" : null
                           },
-                          "CATEGORY": {
-                            "type": "string",
-                            "example": "NORMAL"
+                          "CATEGORY" : {
+                            "type" : "string",
+                            "example" : "NORMAL"
                           },
-                          "REMOTE_STORE_ID": {
-                            "type": "string",
-                            "example": "987654303"
+                          "REMOTE_STORE_ID" : {
+                            "type" : "string",
+                            "example" : "987654303"
                           },
-                          "COUNTRY": {
-                            "type": "string",
-                            "example": "ES"
+                          "COUNTRY" : {
+                            "type" : "string",
+                            "example" : "ES"
                           },
-                          "PAGE": {
-                            "type": "integer",
-                            "example": 1
+                          "PAGE" : {
+                            "type" : "integer",
+                            "example" : 1
                           },
-                          "ROWS_OF_PAGE": {
-                            "type": "integer",
-                            "example": 0
+                          "ROWS_OF_PAGE" : {
+                            "type" : "integer",
+                            "example" : 0
                           },
-                          "letters": {
-                            "type": "integer",
-                            "example": 3
+                          "letters" : {
+                            "type" : "integer",
+                            "example" : 3
                           },
-                          "invalid_prizes": {
-                            "type": "integer",
-                            "example": 4
+                          "invalid_prizes" : {
+                            "type" : "integer",
+                            "example" : 4
                           },
-                          "honor_date": {
-                            "type": "string",
-                            "example": null
+                          "honor_date" : {
+                            "type" : "string",
+                            "example" : null
                           },
-                          "amount": {
-                            "type": "integer",
-                            "example": 140.31
+                          "amount" : {
+                            "type" : "integer",
+                            "example" : 140.31
                           }
                         }
                       }
                     },
-                    "access_token": {
-                      "type": "string",
-                      "example": "eyJhbGciOi..."
+                    "access_token" : {
+                      "type" : "string",
+                      "example" : "eyJhbGciOi..."
                     }
                   }
                 }
               }
             }
           },
-          "500": {
-            "description": "Error interno",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "SQL Error"
+          "500" : {
+            "description" : "Error interno",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "SQL Error"
                     }
                   }
                 }
@@ -1198,196 +1167,194 @@
         }
       }
     },
-    "/api/deleg/pos/posinfo": {
-      "post": {
-        "tags": [
-          "Puntos de Venta"
-        ],
-        "summary": "Obtener información del punto de venta",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "access_token": {
-                    "type": "string",
-                    "example": "eyJhbGciOi..."
+    "/api/deleg/pos/posinfo" : {
+      "post" : {
+        "tags" : [ "Delegados - Puntos de Venta" ],
+        "summary" : "Obtener información del punto de venta",
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "access_token" : {
+                    "type" : "string",
+                    "example" : "eyJhbGciOi..."
                   },
-                  "idPos": {
-                    "type": "integer",
-                    "example": 101314
+                  "idPos" : {
+                    "type" : "integer",
+                    "example" : 101314
                   },
-                  "idManufacturer": {
-                    "type": "integer",
-                    "example": 101
+                  "idManufacturer" : {
+                    "type" : "integer",
+                    "example" : 101
                   }
                 }
               }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Información del punto de venta",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "pointOfSale": {
-                      "type": "object",
-                      "properties": {
-                        "ID_POS": {
-                          "type": "integer",
-                          "example": 101314
+        "responses" : {
+          "200" : {
+            "description" : "Información del punto de venta",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "pointOfSale" : {
+                      "type" : "object",
+                      "properties" : {
+                        "ID_POS" : {
+                          "type" : "integer",
+                          "example" : 101314
                         },
-                        "NAME": {
-                          "type": "string",
-                          "example": "FARMADEMO 005, S.L."
+                        "NAME" : {
+                          "type" : "string",
+                          "example" : "FARMADEMO 005, S.L."
                         },
-                        "CIF": {
-                          "type": "string",
-                          "example": "B00000005"
+                        "CIF" : {
+                          "type" : "string",
+                          "example" : "B00000005"
                         },
-                        "EMAIL": {
-                          "type": "string",
-                          "example": "farmademo005@savispain.es"
+                        "EMAIL" : {
+                          "type" : "string",
+                          "example" : "farmademo005@savispain.es"
                         },
-                        "IBAN": {
-                          "type": "string",
-                          "example": "ES00001111222233334405"
+                        "IBAN" : {
+                          "type" : "string",
+                          "example" : "ES00001111222233334405"
                         },
-                        "PHONE": {
-                          "type": "string",
-                          "example": "987654305"
+                        "PHONE" : {
+                          "type" : "string",
+                          "example" : "987654305"
                         },
-                        "CELL_PHONE": {
-                          "type": "string",
-                          "example": null
+                        "CELL_PHONE" : {
+                          "type" : "string",
+                          "example" : null
                         },
-                        "CONTACT_PERSON": {
-                          "type": "string",
-                          "example": "Farma Demo 005"
+                        "CONTACT_PERSON" : {
+                          "type" : "string",
+                          "example" : "Farma Demo 005"
                         },
-                        "PAYMENT_MEAN": {
-                          "type": "string",
-                          "example": "TRANSFERENCIA"
+                        "PAYMENT_MEAN" : {
+                          "type" : "string",
+                          "example" : "TRANSFERENCIA"
                         },
-                        "MAILING_NOTIFICATION": {
-                          "type": "boolean",
-                          "example": true
+                        "MAILING_NOTIFICATION" : {
+                          "type" : "boolean",
+                          "example" : true
                         },
-                        "MAIN_STREET": {
-                          "type": "string",
-                          "example": "Calle Demo 005"
+                        "MAIN_STREET" : {
+                          "type" : "string",
+                          "example" : "Calle Demo 005"
                         },
-                        "MAIN_CITY": {
-                          "type": "string",
-                          "example": "ARANJUEZ"
+                        "MAIN_CITY" : {
+                          "type" : "string",
+                          "example" : "ARANJUEZ"
                         },
-                        "MAIN_STATE": {
-                          "type": "string",
-                          "example": "MADRID"
+                        "MAIN_STATE" : {
+                          "type" : "string",
+                          "example" : "MADRID"
                         },
-                        "MAIN_ZIP_CODE": {
-                          "type": "integer",
-                          "example": 28300
+                        "MAIN_ZIP_CODE" : {
+                          "type" : "integer",
+                          "example" : 28300
                         },
-                        "SHIPMENT_STREET": {
-                          "type": "string",
-                          "example": null
+                        "SHIPMENT_STREET" : {
+                          "type" : "string",
+                          "example" : null
                         },
-                        "SHIPMENT_CITY": {
-                          "type": "string",
-                          "example": null
+                        "SHIPMENT_CITY" : {
+                          "type" : "string",
+                          "example" : null
                         },
-                        "SHIPMENT_STATE": {
-                          "type": "string",
-                          "example": null
+                        "SHIPMENT_STATE" : {
+                          "type" : "string",
+                          "example" : null
                         },
-                        "SHIPMENT_ZIP_CODE": {
-                          "type": "string",
-                          "example": null
+                        "SHIPMENT_ZIP_CODE" : {
+                          "type" : "string",
+                          "example" : null
                         },
-                        "POS_APP": {
-                          "type": "string",
-                          "example": null
+                        "POS_APP" : {
+                          "type" : "string",
+                          "example" : null
                         },
-                        "CATEGORY": {
-                          "type": "string",
-                          "example": "NORMAL"
+                        "CATEGORY" : {
+                          "type" : "string",
+                          "example" : "NORMAL"
                         },
-                        "REMOTE_STORE_ID": {
-                          "type": "string",
-                          "example": "987654305"
+                        "REMOTE_STORE_ID" : {
+                          "type" : "string",
+                          "example" : "987654305"
                         },
-                        "COUNTRY": {
-                          "type": "string",
-                          "example": "ES"
+                        "COUNTRY" : {
+                          "type" : "string",
+                          "example" : "ES"
                         },
-                        "promotions": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "ID_PROMOTION": {
-                                "type": "integer",
-                                "example": 6952
+                        "promotions" : {
+                          "type" : "array",
+                          "items" : {
+                            "type" : "object",
+                            "properties" : {
+                              "ID_PROMOTION" : {
+                                "type" : "integer",
+                                "example" : 6952
                               },
-                              "PROMOTION_NAME": {
-                                "type": "string",
-                                "example": "VICHY ANIMACIÓN CAPITAL SOLEIL 2022 25% dto. 1ª ud"
+                              "PROMOTION_NAME" : {
+                                "type" : "string",
+                                "example" : "VICHY ANIMACIÓN CAPITAL SOLEIL 2022 25% dto. 1ª ud"
                               },
-                              "PROMOTION_REFERENCE": {
-                                "type": "string",
-                                "example": "13711P2200"
+                              "PROMOTION_REFERENCE" : {
+                                "type" : "string",
+                                "example" : "13711P2200"
                               },
-                              "PROMOTION_END_DATE": {
-                                "type": "string",
-                                "example": "2022-10-30T23:00:00.000Z"
+                              "PROMOTION_END_DATE" : {
+                                "type" : "string",
+                                "example" : "2022-10-30T23:00:00.000Z"
                               },
-                              "PROMOTION_START_DATE": {
-                                "type": "string",
-                                "example": "2021-12-31T23:00:00.000Z"
+                              "PROMOTION_START_DATE" : {
+                                "type" : "string",
+                                "example" : "2021-12-31T23:00:00.000Z"
                               },
-                              "PROMOTION_POSTMARK_DATE": {
-                                "type": "string",
-                                "example": "2022-10-30T23:00:00.000Z"
+                              "PROMOTION_POSTMARK_DATE" : {
+                                "type" : "string",
+                                "example" : "2022-10-30T23:00:00.000Z"
                               },
-                              "id_pos": {
-                                "type": "string",
-                                "example": null
+                              "id_pos" : {
+                                "type" : "string",
+                                "example" : null
                               },
-                              "letters": {
-                                "type": "integer",
-                                "example": 4
+                              "letters" : {
+                                "type" : "integer",
+                                "example" : 4
                               }
                             }
                           }
                         }
                       }
                     },
-                    "access_token": {
-                      "type": "string",
-                      "example": "eyJhbGciOi..."
+                    "access_token" : {
+                      "type" : "string",
+                      "example" : "eyJhbGciOi..."
                     }
                   }
                 }
               }
             }
           },
-          "500": {
-            "description": "Error interno",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "SQL Error"
+          "500" : {
+            "description" : "Error interno",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "SQL Error"
                     }
                   }
                 }
@@ -1397,152 +1364,150 @@
         }
       }
     },
-    "/api/deleg/pos/promotioninfo": {
-      "post": {
-        "tags": [
-          "Puntos de Venta"
-        ],
-        "summary": "Obtener información de participación en la promo",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "access_token": {
-                    "type": "string",
-                    "example": "eyJhbGciOi..."
+    "/api/deleg/pos/promotioninfo" : {
+      "post" : {
+        "tags" : [ "Delegados - Puntos de Venta" ],
+        "summary" : "Obtener información de participación en la promo",
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "access_token" : {
+                    "type" : "string",
+                    "example" : "eyJhbGciOi..."
                   },
-                  "idPos": {
-                    "type": "integer",
-                    "example": 16116
+                  "idPos" : {
+                    "type" : "integer",
+                    "example" : 16116
                   },
-                  "idManufacturer": {
-                    "type": "integer",
-                    "example": 101
+                  "idManufacturer" : {
+                    "type" : "integer",
+                    "example" : 101
                   },
-                  "idPromotion": {
-                    "type": "integer",
-                    "example": 6952
+                  "idPromotion" : {
+                    "type" : "integer",
+                    "example" : 6952
                   }
                 }
               }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Información de participación en la promoción",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+        "responses" : {
+          "200" : {
+            "description" : "Información de participación en la promoción",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "success" : {
+                      "type" : "boolean",
+                      "example" : true
                     },
-                    "info": {
-                      "type": "object",
-                      "properties": {
-                        "days": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "date": {
-                                "type": "string",
-                                "example": "2022-04-25"
+                    "info" : {
+                      "type" : "object",
+                      "properties" : {
+                        "days" : {
+                          "type" : "array",
+                          "items" : {
+                            "type" : "object",
+                            "properties" : {
+                              "date" : {
+                                "type" : "string",
+                                "example" : "2022-04-25"
                               },
-                              "ticketsNumber": {
-                                "type": "integer",
-                                "example": 2
+                              "ticketsNumber" : {
+                                "type" : "integer",
+                                "example" : 2
                               },
-                              "valid_prizes": {
-                                "type": "integer",
-                                "example": 1
+                              "valid_prizes" : {
+                                "type" : "integer",
+                                "example" : 1
                               },
-                              "invalid_prizes": {
-                                "type": "integer",
-                                "example": 1
+                              "invalid_prizes" : {
+                                "type" : "integer",
+                                "example" : 1
                               },
-                              "FAIL_COUPON": {
-                                "type": "integer",
-                                "example": 0
+                              "FAIL_COUPON" : {
+                                "type" : "integer",
+                                "example" : 0
                               },
-                              "FAIL_FORM": {
-                                "type": "integer",
-                                "example": 0
+                              "FAIL_FORM" : {
+                                "type" : "integer",
+                                "example" : 0
                               },
-                              "FAIL_POSTMARK": {
-                                "type": "integer",
-                                "example": 0
+                              "FAIL_POSTMARK" : {
+                                "type" : "integer",
+                                "example" : 0
                               },
-                              "FAIL_PRIVATE_PROMOTION": {
-                                "type": "integer",
-                                "example": 0
+                              "FAIL_PRIVATE_PROMOTION" : {
+                                "type" : "integer",
+                                "example" : 0
                               },
-                              "FAIL_PRODUCT": {
-                                "type": "integer",
-                                "example": 0
+                              "FAIL_PRODUCT" : {
+                                "type" : "integer",
+                                "example" : 0
                               },
-                              "FAIL_SALES_LIST": {
-                                "type": "integer",
-                                "example": 0
+                              "FAIL_SALES_LIST" : {
+                                "type" : "integer",
+                                "example" : 0
                               },
-                              "FAIL_TICKET_DATE": {
-                                "type": "integer",
-                                "example": 1
+                              "FAIL_TICKET_DATE" : {
+                                "type" : "integer",
+                                "example" : 1
                               },
-                              "FAIL_TICKET_ID": {
-                                "type": "integer",
-                                "example": 0
+                              "FAIL_TICKET_ID" : {
+                                "type" : "integer",
+                                "example" : 0
                               },
-                              "state": {
-                                "type": "string",
-                                "example": "closed"
+                              "state" : {
+                                "type" : "string",
+                                "example" : "closed"
                               },
-                              "amount": {
-                                "type": "integer",
-                                "example": 3.74
+                              "amount" : {
+                                "type" : "integer",
+                                "example" : 3.74
                               },
-                              "paymentDate": {
-                                "type": "string",
-                                "example": "2022-05-12"
+                              "paymentDate" : {
+                                "type" : "string",
+                                "example" : "2022-05-12"
                               }
                             }
                           }
                         },
-                        "lastDate": {
-                          "type": "string",
-                          "example": "2022-08-31"
+                        "lastDate" : {
+                          "type" : "string",
+                          "example" : "2022-08-31"
                         },
-                        "lastImage": {
-                          "type": "string",
-                          "example": "https://ombridge.valassis.es/resource/spain/applications/29476/syndications/2290/formContents/File2199zDkjLzAI7nHn/7bc42f89ab43e384044b5d4088696f2f.jpg"
+                        "lastImage" : {
+                          "type" : "string",
+                          "example" : "https://ombridge.valassis.es/resource/spain/applications/29476/syndications/2290/formContents/File2199zDkjLzAI7nHn/7bc42f89ab43e384044b5d4088696f2f.jpg"
                         }
                       }
                     },
-                    "access_token": {
-                      "type": "string",
-                      "example": "eyJhbGciOi..."
+                    "access_token" : {
+                      "type" : "string",
+                      "example" : "eyJhbGciOi..."
                     }
                   }
                 }
               }
             }
           },
-          "500": {
-            "description": "Error interno",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "SQL Error"
+          "500" : {
+            "description" : "Error interno",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "SQL Error"
                     }
                   }
                 }
@@ -1552,62 +1517,60 @@
         }
       }
     },
-    "/api/deleg/pos/linkpromotion": {
-      "post": {
-        "tags": [
-          "Puntos de Venta"
-        ],
-        "summary": "Asociar un punto de venta a una promoción",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "access_token": {
-                    "type": "string",
-                    "example": "eyJhbGciOi..."
+    "/api/deleg/pos/linkpromotion" : {
+      "post" : {
+        "tags" : [ "Delegados - Puntos de Venta" ],
+        "summary" : "Asociar un punto de venta a una promoción",
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "access_token" : {
+                    "type" : "string",
+                    "example" : "eyJhbGciOi..."
                   },
-                  "idPos": {
-                    "type": "integer",
-                    "example": 101314
+                  "idPos" : {
+                    "type" : "integer",
+                    "example" : 101314
                   },
-                  "idManufacturer": {
-                    "type": "integer",
-                    "example": 101
+                  "idManufacturer" : {
+                    "type" : "integer",
+                    "example" : 101
                   },
-                  "idPromotion": {
-                    "type": "integer",
-                    "example": 6952
+                  "idPromotion" : {
+                    "type" : "integer",
+                    "example" : 6952
                   },
-                  "limit": {
-                    "type": "integer",
-                    "example": 100
+                  "limit" : {
+                    "type" : "integer",
+                    "example" : 100
                   }
                 }
               }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Asociación realizada correctamente",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "pointOfSale": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string",
-                          "example": "Point of Sale linked to promotion"
+        "responses" : {
+          "200" : {
+            "description" : "Asociación realizada correctamente",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "pointOfSale" : {
+                      "type" : "object",
+                      "properties" : {
+                        "message" : {
+                          "type" : "string",
+                          "example" : "Point of Sale linked to promotion"
                         },
-                        "access_token": {
-                          "type": "string",
-                          "example": "eyJhbGciOi..."
+                        "access_token" : {
+                          "type" : "string",
+                          "example" : "eyJhbGciOi..."
                         }
                       }
                     }
@@ -1616,48 +1579,48 @@
               }
             }
           },
-          "400": {
-            "description": "Punto de Venta ya asociado a la promoción",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Point of Sale is linked to promotion"
+          "400" : {
+            "description" : "Punto de Venta ya asociado a la promoción",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "Point of Sale is linked to promotion"
                     }
                   }
                 }
               }
             }
           },
-          "404": {
-            "description": "Punto de Venta o promoción no encontrados",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Point of Sale not found"
+          "404" : {
+            "description" : "Punto de Venta o promoción no encontrados",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "Point of Sale not found"
                     }
                   }
                 }
               }
             }
           },
-          "500": {
-            "description": "Error interno",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "SQL Error"
+          "500" : {
+            "description" : "Error interno",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "SQL Error"
                     }
                   }
                 }
@@ -1667,62 +1630,60 @@
         }
       }
     },
-    "/api/deleg/pos/updatelinkpromotion": {
-      "post": {
-        "tags": [
-          "Puntos de Venta"
-        ],
-        "summary": "Actualizar asociación de punto de venta a una promoción",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "access_token": {
-                    "type": "string",
-                    "example": "eyJhbGciOi..."
+    "/api/deleg/pos/updatelinkpromotion" : {
+      "post" : {
+        "tags" : [ "Delegados - Puntos de Venta" ],
+        "summary" : "Actualizar asociación de punto de venta a una promoción",
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "access_token" : {
+                    "type" : "string",
+                    "example" : "eyJhbGciOi..."
                   },
-                  "idPos": {
-                    "type": "integer",
-                    "example": 101314
+                  "idPos" : {
+                    "type" : "integer",
+                    "example" : 101314
                   },
-                  "idManufacturer": {
-                    "type": "integer",
-                    "example": 101
+                  "idManufacturer" : {
+                    "type" : "integer",
+                    "example" : 101
                   },
-                  "idPromotion": {
-                    "type": "integer",
-                    "example": 6952
+                  "idPromotion" : {
+                    "type" : "integer",
+                    "example" : 6952
                   },
-                  "limit": {
-                    "type": "integer",
-                    "example": 100
+                  "limit" : {
+                    "type" : "integer",
+                    "example" : 100
                   }
                 }
               }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Actualización realizada correctamente",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "pointOfSale": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string",
-                          "example": "Updated link between Point of Sale and promotion"
+        "responses" : {
+          "200" : {
+            "description" : "Actualización realizada correctamente",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "pointOfSale" : {
+                      "type" : "object",
+                      "properties" : {
+                        "message" : {
+                          "type" : "string",
+                          "example" : "Updated link between Point of Sale and promotion"
                         },
-                        "access_token": {
-                          "type": "string",
-                          "example": "eyJhbGciOi..."
+                        "access_token" : {
+                          "type" : "string",
+                          "example" : "eyJhbGciOi..."
                         }
                       }
                     }
@@ -1731,48 +1692,48 @@
               }
             }
           },
-          "400": {
-            "description": "Punto de Venta no está asociado a la promoción",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Point of Sale is not linked to promotion"
+          "400" : {
+            "description" : "Punto de Venta no está asociado a la promoción",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "Point of Sale is not linked to promotion"
                     }
                   }
                 }
               }
             }
           },
-          "404": {
-            "description": "Punto de Venta o promoción no encontrados",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Point of Sale not found"
+          "404" : {
+            "description" : "Punto de Venta o promoción no encontrados",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "Point of Sale not found"
                     }
                   }
                 }
               }
             }
           },
-          "500": {
-            "description": "Error interno",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "SQL Error"
+          "500" : {
+            "description" : "Error interno",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "SQL Error"
                     }
                   }
                 }
@@ -1782,212 +1743,307 @@
         }
       }
     },
-    "/api/deleg/pos/stats": {
-      "post": {
-        "tags": [
-          "Puntos de Venta"
-        ],
-        "summary": "Obtener datos estadisticos del punto de venta",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "access_token": {
-                    "type": "string",
-                    "example": "eyJhbGciOi..."
+    "/api/deleg/pos/stats" : {
+      "post" : {
+        "tags" : [ "Delegados - Puntos de Venta" ],
+        "summary" : "Obtener datos estadisticos del punto de venta",
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "access_token" : {
+                    "type" : "string",
+                    "example" : "eyJhbGciOi..."
                   },
-                  "idPos": {
-                    "type": "integer",
-                    "example": 16116
+                  "idPos" : {
+                    "type" : "integer",
+                    "example" : 16116
                   },
-                  "idManufacturer": {
-                    "type": "integer",
-                    "example": 101
+                  "idManufacturer" : {
+                    "type" : "integer",
+                    "example" : 101
                   }
                 }
               }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Datos estadísticos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "total_promotions": {
-                      "type": "integer",
-                      "example": 56
+        "responses" : {
+          "200" : {
+            "description" : "Datos estadísticos",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "total_promotions" : {
+                      "type" : "integer",
+                      "example" : 56
                     },
-                    "promotions_with_participation": {
-                      "type": "integer",
-                      "example": 17
+                    "promotions_with_participation" : {
+                      "type" : "integer",
+                      "example" : 17
                     },
-                    "promos_last_week": {
-                      "type": "integer",
-                      "example": 2
+                    "promos_last_week" : {
+                      "type" : "integer",
+                      "example" : 2
                     },
-                    "promos_last_month": {
-                      "type": "integer",
-                      "example": 4
+                    "promos_last_month" : {
+                      "type" : "integer",
+                      "example" : 4
                     },
-                    "avg_amount_by_promo": {
-                      "type": "integer",
-                      "example": 111.63
+                    "avg_amount_by_promo" : {
+                      "type" : "integer",
+                      "example" : 111.63
                     },
-                    "avg_total_prizes_by_promo": {
-                      "type": "integer",
-                      "example": 26
+                    "avg_total_prizes_by_promo" : {
+                      "type" : "integer",
+                      "example" : 26
                     },
-                    "avg_valid_prizes_by_promo": {
-                      "type": "integer",
-                      "example": 22
+                    "avg_valid_prizes_by_promo" : {
+                      "type" : "integer",
+                      "example" : 22
                     },
-                    "avg_invalid_prizes_by_promo": {
-                      "type": "integer",
-                      "example": 3
+                    "avg_invalid_prizes_by_promo" : {
+                      "type" : "integer",
+                      "example" : 3
                     },
-                    "pct_valid_prizes": {
-                      "type": "number",
-                      "example": 75.64
+                    "pct_valid_prizes" : {
+                      "type" : "number",
+                      "example" : 75.64
                     },
-                    "pct_invalid_prizes": {
-                      "type": "number",
-                      "example": 24.36
+                    "pct_invalid_prizes" : {
+                      "type" : "number",
+                      "example" : 24.36
                     },
-                    "pct_FAIL_TICKET_DATE": {
-                      "type": "number",
-                      "example": 19.67
+                    "pct_FAIL_TICKET_DATE" : {
+                      "type" : "number",
+                      "example" : 19.67
                     },
-                    "pct_FAIL_POSTMARK": {
-                      "type": "number",
-                      "example": 0
+                    "pct_FAIL_POSTMARK" : {
+                      "type" : "number",
+                      "example" : 0
                     },
-                    "pct_FAIL_PRODUCT": {
-                      "type": "number",
-                      "example": 4904
+                    "pct_FAIL_PRODUCT" : {
+                      "type" : "number",
+                      "example" : 4904
                     },
-                    "pct_FAIL_TICKET_ID": {
-                      "type": "number",
-                      "example": 20.28
+                    "pct_FAIL_TICKET_ID" : {
+                      "type" : "number",
+                      "example" : 20.28
                     },
-                    "pct_FAIL_PRIVATE_PROMOTION": {
-                      "type": "number",
-                      "example": 0
+                    "pct_FAIL_PRIVATE_PROMOTION" : {
+                      "type" : "number",
+                      "example" : 0
                     },
-                    "avg_amount_by_prize_and_promo": {
-                      "type": "number",
-                      "example": 4.82
+                    "avg_amount_by_prize_and_promo" : {
+                      "type" : "number",
+                      "example" : 4.82
                     },
-                    "brands": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "ID_POS": {
-                            "type": "integer"
+                    "brands" : {
+                      "type" : "array",
+                      "items" : {
+                        "type" : "object",
+                        "properties" : {
+                          "ID_POS" : {
+                            "type" : "integer"
                           },
-                          "BRAND_NAME": {
-                            "type": "string"
+                          "BRAND_NAME" : {
+                            "type" : "string"
                           },
-                          "total_promotions": {
-                            "type": "integer"
+                          "total_promotions" : {
+                            "type" : "integer"
                           },
-                          "promotions_with_participation": {
-                            "type": "integer"
+                          "promotions_with_participation" : {
+                            "type" : "integer"
                           },
-                          "pct_promotion_participation": {
-                            "type": "number"
+                          "pct_promotion_participation" : {
+                            "type" : "number"
                           }
                         }
                       },
-                      "example": [
-                        {
-                          "ID_POS": 16116,
-                          "BRAND_NAME": "LA ROCHE",
-                          "total_promotions": 17,
-                          "promotions_with_participation": 8,
-                          "pct_promotion_participation": 47.06
-                        },
-                        {
-                          "ID_POS": 16116,
-                          "BRAND_NAME": "ROGER&GALLET",
-                          "total_promotions": 6,
-                          "promotions_with_participation": 0,
-                          "pct_promotion_participation": 0
-                        },
-                        {
-                          "ID_POS": 16116,
-                          "BRAND_NAME": "SKINCEUTICALS",
-                          "total_promotions": 6,
-                          "promotions_with_participation": 0,
-                          "pct_promotion_participation": 0
-                        },
-                        {
-                          "ID_POS": 16116,
-                          "BRAND_NAME": "VICHY",
-                          "total_promotions": 27,
-                          "promotions_with_participation": 9,
-                          "pct_promotion_participation": 33.33
-                        }
-                      ]
+                      "example" : [ {
+                        "ID_POS" : 16116,
+                        "BRAND_NAME" : "LA ROCHE",
+                        "total_promotions" : 17,
+                        "promotions_with_participation" : 8,
+                        "pct_promotion_participation" : 47.06
+                      }, {
+                        "ID_POS" : 16116,
+                        "BRAND_NAME" : "SKINCEUTICALS",
+                        "total_promotions" : 6,
+                        "promotions_with_participation" : 0,
+                        "pct_promotion_participation" : 0
+                      }, {
+                        "ID_POS" : 16116,
+                        "BRAND_NAME" : "VICHY",
+                        "total_promotions" : 27,
+                        "promotions_with_participation" : 9,
+                        "pct_promotion_participation" : 33.33
+                      } ]
                     },
-                    "access_token": {
-                      "type": "string",
-                      "example": "eyJhbGciOi..."
+                    "access_token" : {
+                      "type" : "string",
+                      "example" : "eyJhbGciOi..."
                     }
                   }
                 }
               }
             }
           },
-          "400": {
-            "description": "Punto de Venta no está asociado a la promoción",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Point of Sale is not linked to promotion"
+          "400" : {
+            "description" : "Punto de Venta no está asociado a la promoción",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "Point of Sale is not linked to promotion"
                     }
                   }
                 }
               }
             }
           },
-          "404": {
-            "description": "Punto de Venta o promoción no encontrados",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Point of Sale not found"
+          "404" : {
+            "description" : "Punto de Venta o promoción no encontrados",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "Point of Sale not found"
                     }
                   }
                 }
               }
             }
           },
-          "500": {
-            "description": "Error interno",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "SQL Error"
+          "500" : {
+            "description" : "Error interno",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "SQL Error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/device" : {
+      "put" : {
+        "tags" : [ "Devices" ],
+        "summary" : "Añadir dispositivo",
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "access_token" : {
+                    "type" : "string",
+                    "example" : "eyJhbGciOi..."
+                  },
+                  "appName" : {
+                    "type" : "string",
+                    "example" : "es.valassis.valassispharma"
+                  },
+                  "appVersion" : {
+                    "type" : "string",
+                    "example" : "2.5.4"
+                  },
+                  "deviceBrand" : {
+                    "type" : "string",
+                    "example" : "samsung"
+                  },
+                  "deviceId" : {
+                    "type" : "string",
+                    "example" : "68c6b89e394e183d"
+                  },
+                  "deviceModel" : {
+                    "type" : "string",
+                    "example" : "SM-G985F"
+                  },
+                  "deviceToken" : {
+                    "type" : "string",
+                    "example" : "ewq4uf..."
+                  },
+                  "so" : {
+                    "type" : "string",
+                    "example" : "Android"
+                  },
+                  "soVersion" : {
+                    "type" : "integer",
+                    "example" : 12
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Dispositivo añadido correctamente",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "access_token" : {
+                      "type" : "string",
+                      "example" : "eyJhbGciOi..."
+                    },
+                    "message" : {
+                      "type" : "string",
+                      "example" : "Device added successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "No autorizado",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "TokenExpiredError"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Error interno",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "SQL Error"
                     }
                   }
                 }
@@ -1998,18 +2054,18 @@
       }
     }
   },
-  "components": {
-    "schemas": {},
-    "securitySchemes": {
-      "accessCode": {
-        "type": "oauth2",
-        "flows": {
-          "authorizationCode": {
-            "authorizationUrl": "https://apigtwpharma.savispain.es/api/authenticate",
-            "tokenUrl": "https://apigtwpharma.savispain.es/api/token",
-            "scopes": {
-              "write": "allows modifying resources",
-              "read": "allows reading resources"
+  "components" : {
+    "schemas" : { },
+    "securitySchemes" : {
+      "accessCode" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "https://apigtwpharma.savispain.es/api/authenticate",
+            "tokenUrl" : "https://apigtwpharma.savispain.es/api/token",
+            "scopes" : {
+              "write" : "allows modifying resources",
+              "read" : "allows reading resources"
             }
           }
         }

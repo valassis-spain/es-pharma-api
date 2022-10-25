@@ -12,11 +12,10 @@ router.get('/verify', async (req, res) => {
   logger.info('Token Verify requested');
 
   try {
-
     // when we receive access_token more than 1
-    if ( access_token instanceof Array ) {
+    if (access_token instanceof Array)
       access_token = access_token[0];
-    }
+
     const verified = verifyToken(access_token);
     logger.debug({verified});
 
@@ -34,7 +33,6 @@ function refreshTokenHandler(res, refresh_token) {
   let resStatus = 200;
 
   try {
-
     logger.info('Token Refresh requested');
 
     if (!refresh_token) {
@@ -43,7 +41,7 @@ function refreshTokenHandler(res, refresh_token) {
     }
 
     const verified = verifyToken(refresh_token);
-    logger.debug(JSON.stringify(verified,null,2));
+    logger.debug(JSON.stringify(verified, null, 2));
 
     if (!verified[process.env.REFRESH_CLAIM]) {
       resStatus = 403;

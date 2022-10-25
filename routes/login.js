@@ -7,7 +7,7 @@ const path = require('path');
 const userService = require('../services/userService').create();
 
 const {verifyToken, issueAccessToken, issueRefreshToken} = require('../lib/jwt');
-const pointOfSaleService = require("../services/pointOfSaleService").create;
+// const pointOfSaleService = require('../services/pointOfSaleService').create;
 // const {randomUUID} = require('crypto');
 const delegadoService = require('../services/delegadoService').create();
 const toolService = require('../services/toolService').create();
@@ -24,7 +24,7 @@ router.post('/', async (req, res) => {
 
   let {username} = req.body;
   let {password, origin} = req.body;
-  let remoteIdPos
+  let remoteIdPos;
   let mappingUser;
 
   logger.info(`login page {username:${username}}`);
@@ -38,7 +38,7 @@ router.post('/', async (req, res) => {
 
     // Admin user with remote id pos
     if (username.indexOf('/') > 0) {
-      let temp = username.split('/');
+      const temp = username.split('/');
       username = temp[0];
       remoteIdPos = temp[1];
     }
