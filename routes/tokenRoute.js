@@ -7,11 +7,16 @@ const {verifyToken, issueAccessToken, issueRefreshToken} = require('../lib/jwt')
 router.get('/verify', async (req, res) => {
   const resStatus = 200;
 
-  const {access_token} = req.query;
+  let {access_token} = req.query;
 
   logger.info('Token Verify requested');
 
   try {
+
+    // when we receive access_token more than 1
+    if ( access_token instanceof Array ) {
+      access_token = access_token[0];
+    }
     const verified = verifyToken(access_token);
     logger.debug({verified});
 
