@@ -2,6 +2,7 @@ const {Router} = require('express');
 const {logger} = require('../config');
 const {issueAccessToken} = require('../lib/jwt');
 const toolService = require('../services/toolService').create();
+const deviceService = require('../services/deviceService').create();
 
 const router = Router();
 
@@ -10,13 +11,24 @@ router.put('/', async function(req, res, next) {
 
   const {origin} = req.body;
   const token = req.pharmaApiAccessToken;
-  // const {idUser} = req.query;
 
-  logger.debug (`POST: ${JSON.stringify(req.body)}`)
-  logger.debug (`GET: ${JSON.stringify(req.query)}`)
+  logger.debug(`POST: ${JSON.stringify(req.body)}`)
+  logger.debug(`GET: ${JSON.stringify(req.query)}`)
 
+  try {
+    const response = await deviceService.addDevice(token, token.idPos);
 
-    res.status(200).json({message: 'ok'});
+    if ( response.error )
+      res.status(500).json({error: response.error});
+    else
+      res.status(200).json({message: response.message});
+  }
+  catch (e) {
+    logger.error(e.message);
+    logger.error(e.stack);
+
+    res.status(500).json({error: e.message});
+  }
 });
 
 module.exports = router;
