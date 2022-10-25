@@ -38,7 +38,7 @@ function refreshTokenHandler(res, refresh_token) {
     }
 
     const verified = verifyToken(refresh_token);
-    logger.debug({verified});
+    logger.debug(JSON.stringify(verified,null,2));
 
     if (!verified[process.env.REFRESH_CLAIM]) {
       resStatus = 403;
