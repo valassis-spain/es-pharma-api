@@ -3,7 +3,8 @@ const app = express();
 const path = require('path');
 
 const swaggerUi = require('swagger-ui-express');
-const swaggerDocument = require('./swagger.json');
+const swaggerPharmaDocument = require('./swagger_pharma.json');
+const swaggerRepresentativesDocument = require('./swagger_delegado.json');
 
 const {logger, sqlConfig} = require('./config');
 
@@ -108,8 +109,10 @@ app.use('/api/device',   function(req, res, next) {
 }, deviceRouter);
 
 // swagger routes
-app.use('/api-docs', swaggerUi.serve);
-app.get('/api-docs', swaggerUi.setup(swaggerDocument));
+var options = {}
+app.use('/api-docs-pharma', swaggerUi.serveFiles(swaggerPharmaDocument, options), swaggerUi.setup(swaggerPharmaDocument));
+app.use('/api-docs-representatives', swaggerUi.serveFiles(swaggerRepresentativesDocument, options), swaggerUi.setup(swaggerRepresentativesDocument));
+
 
 // app.use('/api/promotions', promotionsRouter);
 // app.use('/api/ticket', ticketRouter);

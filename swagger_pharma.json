@@ -1,0 +1,450 @@
+{
+  "openapi" : "3.0.0",
+  "servers" : [ {
+    "description" : "SwaggerHub API Auto Mocking",
+    "url" : "https://virtserver.swaggerhub.com/elpcpp/ApiPharma/1.0.0"
+  }, {
+    "description" : "API GateWay",
+    "url" : "https://apigtwpharma.savispain.es"
+  } ],
+  "info" : {
+    "version" : "1.0.0",
+    "title" : "API EndPoints de savi PHARMA",
+    "description" : "Descripción de los EndPoints publicados"
+  },
+  "security" : [ {
+    "accessCode" : [ "read", "write" ]
+  } ],
+  "tags" : [ {
+    "name" : "Token",
+    "description" : "Funciones del token"
+  }, {
+    "name" : "Authenticate",
+    "description" : "Funciones de autenticación"
+  }, {
+    "name" : "Device",
+    "description" : "Funciones de dispositivos"
+  } ],
+  "paths" : {
+    "/api/authenticate" : {
+      "post" : {
+        "description" : "Login de usuario",
+        "tags" : [ "Authenticate" ],
+        "summary" : "Autenticación de usuarios",
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "username" : {
+                    "type" : "string",
+                    "example" : "supervisor002@savispain.es"
+                  },
+                  "password" : {
+                    "type" : "string",
+                    "example" : "temporal"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Acceso permitido",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "id_pos" : {
+                      "type" : "integer",
+                      "example" : 99999
+                    },
+                    "id_user" : {
+                      "type" : "integer",
+                      "example" : 104425
+                    },
+                    "status" : {
+                      "type" : "string",
+                      "example" : "NORMAL"
+                    },
+                    "name" : {
+                      "type" : "string",
+                      "example" : "delegado ejemplo"
+                    },
+                    "phone" : {
+                      "type" : "string",
+                      "example" : "987654321"
+                    },
+                    "email" : {
+                      "type" : "string",
+                      "example" : "supervisor002@savispain.es"
+                    },
+                    "roles" : {
+                      "type" : "array",
+                      "items" : {
+                        "type" : "object",
+                        "properties" : {
+                          "rol" : {
+                            "type" : "string"
+                          }
+                        }
+                      },
+                      "example" : [ {
+                        "rol" : "ROLE_SUPERVISOR"
+                      }, {
+                        "rol" : "ROLE_USER"
+                      } ]
+                    },
+                    "manufacturers" : {
+                      "type" : "array",
+                      "items" : {
+                        "type" : "object",
+                        "properties" : {
+                          "id_manufacturer" : {
+                            "type" : "integer",
+                            "example" : 101
+                          },
+                          "manufacturer_name" : {
+                            "type" : "string",
+                            "example" : "L OREAL ESPAÑA, S.A."
+                          }
+                        }
+                      }
+                    },
+                    "access_token" : {
+                      "type" : "string",
+                      "example" : "eyJhbGciOi..."
+                    },
+                    "refresh_token" : {
+                      "type" : "string",
+                      "example" : "eyJhbGciOi..."
+                    },
+                    "country" : {
+                      "type" : "string",
+                      "example" : "es"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "message" : {
+                      "type" : "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Acceso no autorizado",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "message" : {
+                      "type" : "string",
+                      "example" : "Invalid credentials!"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Error interno",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "SQL Error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/token/verify" : {
+      "get" : {
+        "tags" : [ "token" ],
+        "summary" : "Verificación del token de acceso",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "access_token",
+          "description" : "Token para verificar",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "example" : "eyJhbGciOi..."
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Acceso permitido",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "idPos" : {
+                      "type" : "integer",
+                      "example" : 99999
+                    },
+                    "idUser" : {
+                      "type" : "integer",
+                      "example" : 104425
+                    },
+                    "country" : {
+                      "type" : "string",
+                      "example" : "es"
+                    },
+                    "http://pharma.savispain.es/access_token" : {
+                      "type" : "boolean",
+                      "example" : true
+                    },
+                    "sub" : {
+                      "type" : "string",
+                      "example" : "supervisor002@savispain.es"
+                    },
+                    "iat" : {
+                      "type" : "integer",
+                      "example" : 1665736057
+                    },
+                    "exp" : {
+                      "type" : "integer",
+                      "example" : 1665743257
+                    },
+                    "iss" : {
+                      "type" : "string",
+                      "example" : "https://pharma.savispain.es"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Error interno",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "message" : {
+                      "type" : "string",
+                      "example" : "Token verify error [jwt expired]"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/token/refresh" : {
+      "post" : {
+        "tags" : [ "token" ],
+        "summary" : "Refresco del token de acceso",
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "refresh_token" : {
+                    "type" : "string",
+                    "example" : "eyJhbGciOi..."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Token de refesco correcto",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "access_token" : {
+                      "type" : "string",
+                      "example" : "eyJhbGciOi..."
+                    },
+                    "refresh_token" : {
+                      "type" : "string",
+                      "example" : "eyJhbGciOi..."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Error interno",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "message" : {
+                      "type" : "string",
+                      "example" : "Token refresh error [jwt expired]"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/device" : {
+      "put" : {
+        "tags" : [ "Devices" ],
+        "summary" : "Añadir dispositivo",
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "access_token" : {
+                    "type" : "string",
+                    "example" : "eyJhbGciOi..."
+                  },
+                  "appName" : {
+                    "type" : "string",
+                    "example" : "es.valassis.valassispharma"
+                  },
+                  "appVersion" : {
+                    "type" : "string",
+                    "example" : "2.5.4"
+                  },
+                  "deviceBrand" : {
+                    "type" : "string",
+                    "example" : "samsung"
+                  },
+                  "deviceId" : {
+                    "type" : "string",
+                    "example" : "68c6b89e394e183d"
+                  },
+                  "deviceModel" : {
+                    "type" : "string",
+                    "example" : "SM-G985F"
+                  },
+                  "deviceToken" : {
+                    "type" : "string",
+                    "example" : "ewq4uf..."
+                  },
+                  "so" : {
+                    "type" : "string",
+                    "example" : "Android"
+                  },
+                  "soVersion" : {
+                    "type" : "integer",
+                    "example" : 12
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Dispositivo añadido correctamente",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "access_token" : {
+                      "type" : "string",
+                      "example" : "eyJhbGciOi..."
+                    },
+                    "message" : {
+                      "type" : "string",
+                      "example" : "Device added successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "No autorizado",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "TokenExpiredError"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Error interno",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "error" : {
+                      "type" : "string",
+                      "example" : "SQL Error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : { },
+    "securitySchemes" : {
+      "accessCode" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "https://apigtwpharma.savispain.es/api/authenticate",
+            "tokenUrl" : "https://apigtwpharma.savispain.es/api/token",
+            "scopes" : {
+              "write" : "allows modifying resources",
+              "read" : "allows reading resources"
+            }
+          }
+        }
+      }
+    }
+  }
+}
