@@ -246,39 +246,6 @@ values (${idDelegado},${idPos},current_timestamp,null);`);
   return response;
 };
 
-pointOfSaleService.prototype.getPromotions = async function(token, idManufacturer, idPos) {
-  const response = await mssqlDb.launchQuery('transaction', `select pdp.ID_PROMOTION
-     , pdp.PROMOTION_NAME
-     , pdp.PROMOTION_REFERENCE
-     , pdp.PROMOTION_END_DATE
-     , pdp.PROMOTION_START_DATE
-     , pdp.PROMOTION_POSTMARK_DATE
-     , (select pdpp.ID_POS
-        from PS_DIM_POS_PROMOTION pdpp
-        where pdpp.ID_PROMOTION = pdp.ID_PROMOTION and pdpp.ID_POS = ${idPos}) id_pos
-     , (select pdpp.POS_LIMIT
-        from PS_DIM_POS_PROMOTION pdpp
-        where pdpp.ID_PROMOTION = pdp.ID_PROMOTION and pdpp.ID_POS = ${idPos}) limit        
-      , ( select count(*)
-        from PS_FACT_POS_LETTER pl
-        where pl.ID_POS = ${idPos} and pl.ID_PROMOTION = pdp.ID_PROMOTION) letters
-from PS_DIM_PROMOTION pdp
-         left join PS_DIM_BRAND pdb on pdp.ID_BRAND = pdb.ID_BRAND
-where pdb.ID_MANUFACTURER = ${idManufacturer}
-  and pdp.PROMOTION_POSTMARK_DATE > dateadd(DAY, -30, current_timestamp)`);
-
-  toolService.registerAudit({
-    user_id: token.idUser,
-    eventName: 'get Promotions',
-    eventType: 'READ',
-    tableName: 'PS_DIM_PROMOTIONS',
-    rowId: idPos,
-    data: `Manufacturer ${idManufacturer} POS ${idPos}`
-  });
-
-  return response;
-};
-
 pointOfSaleService.prototype.getPointOfSaleDetails = async function(token, idManufacturer, idPos) {
   const response = await mssqlDb.launchQuery('transaction', `select pos.ID_POS,
        NAME,
@@ -347,43 +314,6 @@ where ID_PROMOTION=${idPromotion} and ID_POS=${idPos};`);
     tableName: 'PS_DIM_POS_PROMOTION',
     rowId: idPos,
     data: token.sub
-  });
-
-  return response;
-};
-
-pointOfSaleService.prototype.getInfoPromotion = async function(token, idManufacturer, idPos, idPromotion) {
-  const response = await mssqlDb.launchQuery('transaction', `select
-      substring(pl.REF_LETTER, 12,2) year,
-      substring(pl.REF_LETTER, 14,3) dayofyear,
-      pl.TOTAL_PRIZES,
-      pl.VALID_PRIZES,
-      pl.INVALID_PRIZES,
-      pfp.AMOUNT,
-      pfp.BONIFICATION,
-      pfp.PAYMENT_DATE,
-      pfp.HONOR_DATE,
-      pl.FAIL_COUPON,
-      pl.FAIL_FORM,
-      pl.FAIL_POSTMARK,
-      pl.FAIL_PRIVATE_PROMOTION,
-      pl.FAIL_PRODUCT,
-      pl.FAIL_SALES_LIST,
-      pl.FAIL_TICKET_DATE,
-      pl.FAIL_TICKET_ID,
-      pfp.ID_ASSIGNED_PRIZE
-    from PS_FACT_POS_LETTER pl
-    left join PS_FACT_PAYMENT pfp on pl.ID_POS_LETTER = pfp.ID_POS_LETTER
-    where pl.ID_POS = ${idPos}
-      and pl.ID_PROMOTION = ${idPromotion};`);
-
-  toolService.registerAudit({
-    user_id: token.idUser,
-    eventName: 'Get Point of Sale Letters info',
-    eventType: 'READ',
-    tableName: 'PS_FACT_POS_LETTER',
-    rowId: idPos,
-    data: idPromotion
   });
 
   return response;

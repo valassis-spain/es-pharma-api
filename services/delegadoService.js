@@ -79,6 +79,48 @@ where sup.id_supervisor = ${idSupervisor}`);
   return response;
 };
 
+delegadoService.prototype.getDelegadoByPos = async function(token, idManufacturer, idPos) {
+  const response = await mssqlDb.launchQuery('transaction', `select us.idUser,
+       us.sUsername,
+       us.enabled,
+       us.ACCOUNT_LOCKED,
+       ud.id_user,
+       ud.name,
+       ud.email,
+       ud.phone,
+       ud.removed_at,
+       case
+           when us.ENABLED = 0 and us.ACCOUNT_LOCKED = 1 and len(us.sPassword) > 36 then 1
+           else case
+                    when us.ENABLED = 1 and us.ACCOUNT_LOCKED = 1 and len(us.sPassword) <= 36 then 2
+                    else case
+                             when us.ENABLED = 1 and us.ACCOUNT_LOCKED = 0 and len(us.sPassword) <= 36 then 3
+                             else 4
+                        end
+               end
+           end
+                                        state
+from USER_POS up
+join users us on up.ID_USER = us.idUser
+join USER_GROUPS ug on us.idUser = ug.idUser
+join USER_DETAIL ud on us.idUser = ud.ID_USER
+join SUPERVISOR sup on us.idUser = sup.ID_USER
+where up.ID_POS = ${idPos}
+  and sup.id_manufacturer = ${idManufacturer}
+and ug.idGroup in (4,5)`);
+
+  toolService.registerAudit({
+    user_id: token.idUser,
+    eventName: 'get Delegados by Supervisor',
+    eventType: 'READ',
+    tableName: 'SUPERVISOR',
+    rowId: idPos,
+    data: token.sub
+  });
+
+  return response;
+};
+
 delegadoService.prototype.getMyManufacturers = async function(token, idDelegado) {
   const response = await mssqlDb.launchQuery('transaction', `select pdm.ID_MANUFACTURER, pdm.MANUFACTURER_NAME 
 from SUPERVISOR sup

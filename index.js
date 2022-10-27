@@ -27,6 +27,7 @@ var loginRouter = require('./routes/login');
 var tokenRouter = require('./routes/tokenRoute');
 var delegadoRouter = require('./routes/delegadoRoute');
 var pointOfSaleRouter = require('./routes/pointOfSaleRoute');
+var promotionRouter = require('./routes/promotionRoute');
 var userRouter = require('./routes/userRoute');
 var deviceRouter = require('./routes/deviceRoute');
 
@@ -93,6 +94,12 @@ app.use('/api/deleg/user',   function(req, res, next) {
   logger.debug('Router User');
   next();
 }, userRouter);
+
+// Promotion's functionalities
+app.use('/api/promotions',   function(req, res, next) {
+  logger.debug('Router Promotion');
+  next();
+}, promotionRouter);
 
 // Device's functionalities
 app.use('/api/device',   function(req, res, next) {

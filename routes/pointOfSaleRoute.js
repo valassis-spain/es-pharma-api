@@ -3,6 +3,8 @@ const {logger} = require('../config');
 const router = Router();
 
 const pointOfSaleService = require('../services/pointOfSaleService').create();
+const promotionService = require('../services/promotionService').create();
+const delegadoService = require('../services/delegadoService').create();
 const bridgeService = require('../services/bridgeService').create();
 
 // const {verifyAccesToken} = require('../lib/jwt');
@@ -81,9 +83,12 @@ router.post('/posInfo', async function(req, res) {
     }
 
     if (!errors) {
-      const mappingPromotions = await pointOfSaleService.getPromotions(token, idManufacturer, idPos);
+      const mappingPromotions = await promotionService.getPromotionsByPosAndManufacturer(token, idManufacturer, idPos);
+
+      const mappingDelegado = await delegadoService.getDelegadoByPos(token, idManufacturer, idPos)
 
       mappginPos[0].promotions = mappingPromotions;
+      mappginPos[0].delegado = mappingDelegado;
 
       logger.info('end pos details');
 
@@ -108,7 +113,7 @@ router.post('/posPromotions', async function(req, res) {
   const token = req.pharmaApiAccessToken;
 
   try {
-    const mappingPromotions = await pointOfSaleService.getPromotions(token, idManufacturer, idPos);
+    const mappingPromotions = await promotionService.getPromotionsByPosAndManufacturer(token, idManufacturer, idPos);
 
     logger.info('end posPromotions');
 
@@ -141,7 +146,7 @@ router.post('/linkPromotion', async function(req, res) {
     }
 
     if (!errors) {
-      const mappingPromotions = await pointOfSaleService.getPromotions(token, idManufacturer, idPos);
+      const mappingPromotions = await promotionService.getPromotionsByPosAndManufacturer(token, idManufacturer, idPos);
 
       let promotion;
 
@@ -197,7 +202,7 @@ router.post('/updatelinkpromotion', async function(req, res) {
     }
 
     if (!errors) {
-      const mappingPromotions = await pointOfSaleService.getPromotions(token, idManufacturer, idPos);
+      const mappingPromotions = await promotionService.getPromotionsByPosAndManufacturer(token, idManufacturer, idPos);
 
       let promotion;
 
@@ -255,7 +260,7 @@ router.post('/promotioninfo', async function(req, res) {
     }
 
     if (!errors) {
-      let posLetterInfo = await pointOfSaleService.getInfoPromotion(token, idManufacturer, idPos, idPromotion);
+      let posLetterInfo = await promotionService.getInfoPromotion(token, idManufacturer, idPos, idPromotion);
 
       if (!posLetterInfo) {
         // this point of sale don't have letters
