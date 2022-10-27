@@ -10,9 +10,9 @@ promotionService.prototype.getPromotionsByPosAndManufacturer = async function(to
   const response = await mssqlDb.launchQuery('transaction', `select pdp.ID_PROMOTION
      , pdp.PROMOTION_NAME
      , pdp.PROMOTION_REFERENCE
-     , pdp.PROMOTION_END_DATE
-     , pdp.PROMOTION_START_DATE
-     , pdp.PROMOTION_POSTMARK_DATE
+     , replace(convert(varchar(10),pdp.PROMOTION_END_DATE,111),'/','-') PROMOTION_END_DATE
+     , replace(convert(varchar(10),pdp.PROMOTION_START_DATE,111),'/','-') PROMOTION_START_DATE
+     , replace(convert(varchar(10),pdp.PROMOTION_POSTMARK_DATE,111),'/','-') PROMOTION_POSTMARK_DATE
      , (select pdpp.ID_POS
         from PS_DIM_POS_PROMOTION pdpp
         where pdpp.ID_PROMOTION = pdp.ID_PROMOTION and pdpp.ID_POS = ${idPos}) id_pos

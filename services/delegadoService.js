@@ -61,7 +61,6 @@ delegadoService.prototype.getMyDelegs = async function(token, idManufacturer, id
         from user_pos up
                  join PS_DIM_MANUFACTURER_POS pdb on pdb.ID_MANUFACTURER = ${idManufacturer}
         where up.ID_USER = sup.ID_USER) pos_linked
---        ,*
 from SUPERVISOR sup
          left join users us on sup.ID_USER = us.idUser
          left join user_detail ud on ud.id_user = us.idUser
@@ -141,7 +140,14 @@ group by pdm.ID_MANUFACTURER, pdm.MANUFACTURER_NAME`);
 };
 
 delegadoService.prototype.getMyPromotions = async function(token, idManufacturer) {
-  const response = await mssqlDb.launchQuery('transaction', `select pdp.ID_PROMOTION, pdp.PROMOTION_NAME, pdp.PROMOTION_REFERENCE, pdp.PROMOTION_START_DATE, pdp.PROMOTION_END_DATE, pdp.PROMOTION_POSTMARK_DATE, pdp.promotion_app 
+  const response = await mssqlDb.launchQuery('transaction', `select 
+    pdp.ID_PROMOTION, 
+    pdp.PROMOTION_NAME, 
+    pdp.PROMOTION_REFERENCE, 
+    replace(convert(varchar(10),pdp.PROMOTION_START_DATE,111),'/','-') PROMOTION_START_DATE, 
+    replace(convert(varchar(10),pdp.PROMOTION_END_DATE,111),'/','-') PROMOTION_END_DATE, 
+    replace(convert(varchar(10),pdp.PROMOTION_POSTMARK_DATE,111),'/','-') PROMOTION_POSTMARK_DATE, 
+    pdp.promotion_app 
 from PS_DIM_PROMOTION pdp
 join PS_DIM_BRAND pdb on pdp.ID_BRAND = pdb.ID_BRAND
          join PS_DIM_MANUFACTURER pdm on pdb.ID_MANUFACTURER = pdm.ID_MANUFACTURER
