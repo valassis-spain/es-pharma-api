@@ -296,7 +296,7 @@ promotionService.prototype.pharmaPromotionList = async function(token, idPos, pa
     // if since param is not defined, it will be 180 before today
     processSinceUntilParams(params);
 
-    activePromotions = await getPrivatePromotions(token, params);
+    // activePromotions = await getPrivatePromotions(token, params);
 
     if ((token.sub === 'demo@mail.com' || token.sub === 'demo@savispain.es') && params.filter !== 'secret') {
       // get demo promotions
@@ -317,7 +317,11 @@ promotionService.prototype.pharmaPromotionList = async function(token, idPos, pa
       // activePromotions = getPublicPromotions(cmd.filter, timestampSince, timestampUntil, claims)
       activePromotions = await getPublicPromotions(token, params);
       // Add Private Promotions
-      const privatePromotions = getPrivatePromotions(token, params);
+      const privatePromotions = await getPrivatePromotions(token, params);
+
+      for ( const promotion of privatePromotions) {
+        activePromotions.push(promotion);
+      }
     }
     //
     // switch (cmd.filter) {
