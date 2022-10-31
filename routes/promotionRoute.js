@@ -42,8 +42,9 @@ router.get('/', async function(req, res, next) {
       filter
     });
 
-    // build Product Promotions property
-    promotionFormatForProductPromotion(mappingPromotions);
+    // build Product Promotions property when don't request secret promotion
+    if (filter !== 'secret')
+      promotionFormatForProductPromotion(mappingPromotions);
 
     res.status(200).json(mappingPromotions.promotions);
   }

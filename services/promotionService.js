@@ -182,14 +182,69 @@ async function getPrivatePromotions(token, params) {
       ' p.id_product_promotion_b, p.product_promotion_b_description';
   }
   else {
-    query += ' select distinct pp.promotion, 0 AS totalp,0 AS totalv,0 AS amount,getdate() AS promotion_last_sync_date' +
-      ' from PosPromotion pp' +
-      ' where pp.pointOfSale.id = @idPos ' +
-      ' and pp.promotion.promotionStartDate <= @since' +
-      ' and pp.promotion.promotionPostmarkDate >= @until ' +
-      ' and pp.promotion.posPromotion = 1 ' +
-      ' and pp.promotion.promotionApp = 1 ';
+    query += 'select ' +
+      ' p.id_promotion,' +
+      ' p.PROMOTION_APP promoAPP,' +
+      ' p.promotion_description,' +
+      // ' p.promotion_end_date,' +
+      ' convert(varchar(10),p.promotion_end_date,111) promotion_end_date,' +
+      ' p.promotion_name,' +
+      // ' p.promotion_postmark_date,' +
+      ' convert(varchar(10),p.promotion_postmark_date,111) promotion_postmark_date,' +
+      ' p.promotion_reference,' +
+      // ' p.promotion_start_date,' +
+      ' convert(varchar(10),p.promotion_start_date,111) promotion_start_date,' +
+      ' p.id_product_promotion_a,' +
+      ' p.product_promotion_a_description,' +
+      ' p.id_product_promotion_b,' +
+      ' p.product_promotion_b_description, ' +
+      ' 0 totalp,' +
+      ' 0 totalv,' +
+      ' 0 amount,' +
+      ' convert(varchar(10),getDate(),111) max_cierre ' +
+      'from PS_DIM_PROMOTION p ' +
+      'left join PS_FACT_POS_LETTER pl  on p.ID_PROMOTION=pl.ID_promotion ' +
+      'left join PS_FACT_PAYMENT py on pl.ID_POS_LETTER = py.ID_POS_LETTER ' +
+      'join PS_DIM_POS_PROMOTION ppp on ppp.ID_PROMOTION=p.ID_PROMOTION and ppp.ID_POS= pl.ID_POS ' +
+      'WHERE pl.ID_POS= @idPos ' +
+      'AND p.PROMOTION_POSTMARK_DATE >= @until ' +
+      'AND p.PROMOTION_START_DATE <= @since ' +
+      'AND p.PRIVATE_PROMOTION=1 ' +
+      'AND p.PROMOTION_APP=1 ' +
+      'group BY p.id_promotion, p.PROMOTION_APP, p.promotion_description, p.promotion_end_date,' +
+      ' p.promotion_name, p.promotion_postmark_date, p.promotion_reference,' +
+      ' p.promotion_start_date, p.id_product_promotion_a, p.product_promotion_a_description,' +
+      ' p.id_product_promotion_b, p.product_promotion_b_description';
   }
+
+  const queryParams = {};
+  queryParams.since = params.since;
+  queryParams.until = params.until;
+  queryParams.idPos = token.idPos;
+
+  const mappingPromotions = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
+
+  return mappingPromotions;
+}
+
+async function getSecretPromotions(token, params) {
+  let query = ' select \'secret\' AS promoType,' +
+      'p.ID_PROMOTION,' +
+      'b.ID_BRAND,' +
+      'b.BRAND_NAME,' +
+      'm.MANUFACTURER_NAME, ' +
+      'CASE WHEN EXISTS (SELECT * FROM USER_PROMO_INFO_REQUEST u WHERE u.ID_POS = @idPos AND u.ID_PROMOTION=p.ID_PROMOTION )THEN \'TRUE\' ELSE \'FALSE\' END as USER_REQUEST ' +
+      'from PS_DIM_PROMOTION p ' +
+      'JOIN PS_DIM_BRAND b ' +
+      'on b.ID_BRAND = p.ID_BRAND ' +
+      'join PS_DIM_MANUFACTURER m ' +
+      'on m.ID_MANUFACTURER=b.ID_MANUFACTURER ' +
+      'join PS_DIM_POS_PROMOTION ppp on ppp.ID_PROMOTION=p.ID_PROMOTION and ppp.ID_POS!=@idPos ' +
+      'WHERE p.PROMOTION_POSTMARK_DATE >= @since ' +
+      'AND p.PROMOTION_START_DATE <= @until ' +
+      'AND p.PRIVATE_PROMOTION=1 ' +
+      'AND p.PROMOTION_APP=1 ' +
+      'group BY p.ID_PROMOTION,b.ID_BRAND,b.BRAND_NAME,m.MANUFACTURER_NAME';
 
   const queryParams = {};
   queryParams.since = params.since;
@@ -296,26 +351,23 @@ promotionService.prototype.pharmaPromotionList = async function(token, idPos, pa
     // if since param is not defined, it will be 180 before today
     processSinceUntilParams(params);
 
-    // activePromotions = await getPrivatePromotions(token, params);
-
     if ((token.sub === 'demo@mail.com' || token.sub === 'demo@savispain.es') && params.filter !== 'secret') {
       // get demo promotions
       activePromotions = generateDemoPromotions();
     }
     else if ((token.sub === 'test@savispain.es' || token.sub === 'soporte@savispain.es' || token.idPos === 99999) && params.filter !== 'secret') {
       params.filter = 'test';
-      // get getPublicPromotions(filter, timestampSince, timestampUntil, claims)
       activePromotions = await getPublicPromotions(token, params);
     }
     else if (params.filter === 'secret') {
       // for showing to customer all the private promotions where he can't participate
       // By the moment it will shows only brands and not Promotions
-      // activePromotions = getSecretPromotions(timestampSince, timestampUntil, claims)
+      activePromotions = await getSecretPromotions(token, params);
     }
     else {
       // public promotions
-      // activePromotions = getPublicPromotions(cmd.filter, timestampSince, timestampUntil, claims)
       activePromotions = await getPublicPromotions(token, params);
+
       // Add Private Promotions
       const privatePromotions = await getPrivatePromotions(token, params);
 
@@ -323,29 +375,6 @@ promotionService.prototype.pharmaPromotionList = async function(token, idPos, pa
         activePromotions.push(promotion);
       }
     }
-    //
-    // switch (cmd.filter) {
-    //   //for rendering promos and not secret promos with brand info
-    //   case 'secret':
-    //     for (promo in activePromotions) {
-    //       def thisPromo = new JSONSecretPromotion(promo[0] as Promotion)
-    //       thisPromo.setpromoType(promo[1] as String)
-    //       thisPromo.setBrandName(promo[2] as String)
-    //       thisPromo.setManufacturerName(promo[3] as String)
-    //       thisPromo.setUserRequest(promo[4] as String)
-    //       JSONPromotions << thisPromo
-    //     }
-    //     break
-    //   default:
-    //     for (promo in activePromotions) {
-    //       def thisPromo = new JSONPromotion(promo[0] as Promotion)
-    //       thisPromo.setTotalp(promo[1] as int)
-    //       thisPromo.setTotalv(promo[2] as int)
-    //       thisPromo.setAmount(promo[3] as BigDecimal)
-    //       thisPromo.setPromotion_last_sync_date(promo[4] as Date)
-    //       JSONPromotions << thisPromo
-    //     }
-    // }
 
     response.promotions = activePromotions;
   }
