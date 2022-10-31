@@ -35,7 +35,7 @@ const getUser = async function(req, res, next) {
     const mappingUser = await userService.getUserById(token, idDelegado);
 
     if (mappingUser.length !== 1) {
-      toolService.registerAudit({
+      await toolService.registerAudit({
         user_id: token.idUser,
         eventName: 'Read User Not Found',
         eventType: 'READ',
@@ -69,7 +69,7 @@ const getDelegado = async function(req, res, next) {
     const mappingDelegado = await userService.getUserDetailsById(token, idDelegado);
 
     if (mappingDelegado.length !== 1) {
-      toolService.registerAudit({
+      await toolService.registerAudit({
         user_id: token.idUser,
         eventName: 'Read User Detail Not Found',
         eventType: 'READ',
@@ -97,13 +97,13 @@ const getDelegado = async function(req, res, next) {
   }
 };
 
-const verifyAuthorization = function(req, res, next) {
+const verifyAuthorization = async function(req, res, next) {
   const {idDelegado} = req.body;
   const token = req.pharmaApiAccessToken;
   const mappingUser = req.locals.mappingUser;
 
   if (parseInt(idDelegado) !== token.idUser && token.idUser !== mappingUser.ID_SUPERVISOR) {
-    toolService.registerAudit({
+    await toolService.registerAudit({
       user_id: token.idUser,
       eventName: 'Read User Not Authorized',
       eventType: 'READ',

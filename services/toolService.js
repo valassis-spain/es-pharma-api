@@ -15,6 +15,7 @@ toolService.prototype.registerAudit = async function(values = {}) {
   catch (e) {
     logger.error(e.message);
     logger.error(e.stack);
+    throw new Error(e.message);
   }
 };
 

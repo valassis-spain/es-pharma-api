@@ -11,7 +11,7 @@ userService.prototype.updateUserWithCode = async function(token, idUser, uuid) {
 where idUser=${idUser}`);
 
   if (token) {
-    toolService.registerAudit({
+    await toolService.registerAudit({
       user_id: token.idUser,
       eventName: 'mark representative user with unique code',
       eventType: 'UPDATE',
@@ -21,7 +21,7 @@ where idUser=${idUser}`);
     });
   }
   else {
-    toolService.registerAudit({
+    await toolService.registerAudit({
       user_id: idUser,
       eventName: 'mark representative user with unique code',
       eventType: 'UPDATE',
@@ -39,7 +39,7 @@ userService.prototype.updateUserCodeVerified = async function(token, idUser, uui
 where idUser=${idUser}`);
 
   if (token) {
-    toolService.registerAudit({
+    await toolService.registerAudit({
       user_id: token.idUser,
       eventName: 'representative email verified',
       eventType: 'UPDATE',
@@ -49,7 +49,7 @@ where idUser=${idUser}`);
     });
   }
   else {
-    toolService.registerAudit({
+    await toolService.registerAudit({
       user_id: idUser,
       eventName: 'representative email verified',
       eventType: 'UPDATE',
@@ -67,7 +67,7 @@ userService.prototype.updateUserPwd = async function(token, idUser, pwd) {
 where idUser=${idUser}`);
 
   if (token) {
-    toolService.registerAudit({
+    await toolService.registerAudit({
       user_id: token.idUser,
       eventName: 'representative set password',
       eventType: 'UPDATE',
@@ -77,7 +77,7 @@ where idUser=${idUser}`);
     });
   }
   else {
-    toolService.registerAudit({
+    await toolService.registerAudit({
       user_id: idUser,
       eventName: 'representative set password',
       eventType: 'UPDATE',
@@ -112,7 +112,7 @@ left join SUPERVISOR sup on sup.id_user = us.idUser
 where us.sUsername = '${username}'`);
 
   if (token) {
-    toolService.registerAudit({
+    await toolService.registerAudit({
       user_id: token.idUser,
       eventName: 'get user by username',
       eventType: 'READ',
@@ -146,7 +146,7 @@ left join SUPERVISOR sup on sup.id_user = us.idUser
 left join user_detail ud on ud.id_user = us.idUser 
 where us.idUser=${idUser}`);
 
-  toolService.registerAudit({
+  await toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'get user by ID',
     eventType: 'READ',
@@ -164,7 +164,7 @@ id, id_user, name,email,phone,address,city,zip_code,state,country,removed_at
 from  USER_DETAIL ud 
 where ud.id_user = ${idUser}`);
 
-  toolService.registerAudit({
+  await toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'get user details by ID',
     eventType: 'READ',
@@ -180,7 +180,7 @@ userService.prototype.disableUser = async function(token, idUser) {
   const response = await mssqlDb.launchQuery('transaction', `update USERS set ENABLED=0, ACCOUNT_LOCKED=1 
 where idUser=${idUser}`);
 
-  toolService.registerAudit({
+  await toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'disable user',
     eventType: 'UPDATE',
@@ -196,7 +196,7 @@ userService.prototype.logicalRemove = async function(token, idUser) {
   const response = await mssqlDb.launchQuery('transaction', `update USER_DETAIL set REMOVED_AT=current_timestamp, REMOVED_BY=${token.idUser} 
 where ID_USER=${idUser}`);
 
-  toolService.registerAudit({
+  await toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'logical remove user details',
     eventType: 'UPDATE',
@@ -221,7 +221,7 @@ ${values.zipCode ? values.zipCode : 0},
 '${values.country ? values.country : 'es'}',
 current_timestamp)`);
 
-  toolService.registerAudit({
+  await toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'add user details',
     eventType: 'INSERT',
@@ -245,7 +245,7 @@ ${values.country ? 'COUNTRY=\'' + values.country + '\',' : ''}
 UPDATED_AT=current_timestamp, UPDATED_BY=${token.idUser} 
 where ID_USER=${idDelegado}`);
 
-  toolService.registerAudit({
+  await toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'update user details',
     eventType: 'UPDATE',
@@ -266,7 +266,7 @@ from users us
 where us.sUsername = '${username}'`);
 
   if (token) {
-    toolService.registerAudit({
+    await toolService.registerAudit({
       user_id: token.idUser,
       eventName: 'get user groups by username',
       eventType: 'READ',

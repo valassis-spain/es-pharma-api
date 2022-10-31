@@ -19,7 +19,7 @@ router.get('/read', async function(req, res, next) {
     const mappingUser = userService.getUserById(token.idUser);
 
     if (mappingUser.length !== 1) {
-      toolService.registerAudit({
+      await toolService.registerAudit({
         user_id: token.idUser,
         eventName: 'Read User Not Found',
         eventType: 'READ',

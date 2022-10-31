@@ -85,7 +85,7 @@ router.post('/posInfo', async function(req, res) {
     if (!errors) {
       const mappingPromotions = await promotionService.getPromotionsByPosAndManufacturer(token, idManufacturer, idPos);
 
-      const mappingDelegado = await delegadoService.getDelegadoByPos(token, idManufacturer, idPos)
+      const mappingDelegado = await delegadoService.getDelegadoByPos(token, idManufacturer, idPos);
 
       mappginPos[0].promotions = mappingPromotions;
       mappginPos[0].delegado = mappingDelegado;

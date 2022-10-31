@@ -14,7 +14,7 @@ deviceService.prototype.addDevice = async function(token, idPos, params) {
   try {
     await mssqlDb.launchPreparedQuery('transaction', query, params);
 
-    toolService.registerAudit({
+    await toolService.registerAudit({
       user_id: token.idUser,
       eventName: 'add new Device',
       eventType: 'INSERT',

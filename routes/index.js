@@ -6,13 +6,13 @@ const toolService = require('../services/toolService').create();
 
 const router = Router();
 
-router.all('/', verifyAccesToken, function(req, res, next) {
+router.all('/', verifyAccesToken, async function(req, res, next) {
   logger.debug('Router Index');
 
   const token = req.pharmaApiAccessToken;
 
   if (req.pharmaApiError) {
-    toolService.registerAudit({
+    await toolService.registerAudit({
       user_id: 52,
       eventName: req.pharmaApiError.name,
       eventType: 'READ',
@@ -24,7 +24,7 @@ router.all('/', verifyAccesToken, function(req, res, next) {
     res.status(401).json({error: req.pharmaApiError.name});
   }
   else {
-    toolService.registerAudit({
+    await toolService.registerAudit({
       user_id: token.idUser,
       eventName: 'Access Token valid',
       eventType: 'READ',

@@ -11,7 +11,7 @@ delegadoService.prototype.getMySupervisor = async function(token, idDelegado) {
 left join user_detail ud on ud.id_user = sup.id_supervisor 
 where sup.id_user = ${idDelegado}`);
 
-  toolService.registerAudit({
+  await toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'get supervisor by delegado',
     eventType: 'READ',
@@ -66,7 +66,7 @@ from SUPERVISOR sup
          left join user_detail ud on ud.id_user = us.idUser
 where sup.id_supervisor = ${idSupervisor}`);
 
-  toolService.registerAudit({
+  await toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'get Delegados by Supervisor',
     eventType: 'READ',
@@ -108,7 +108,7 @@ where up.ID_POS = ${idPos}
   and sup.id_manufacturer = ${idManufacturer}
 and ug.idGroup in (4,5)`);
 
-  toolService.registerAudit({
+  await toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'get Delegados by Supervisor',
     eventType: 'READ',
@@ -127,7 +127,7 @@ join PS_DIM_MANUFACTURER pdm on sup.ID_MANUFACTURER = pdm.ID_MANUFACTURER
 where sup.id_supervisor = ${idDelegado}
 group by pdm.ID_MANUFACTURER, pdm.MANUFACTURER_NAME`);
 
-  toolService.registerAudit({
+  await toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'get Manufacturers by Delegado',
     eventType: 'READ',
@@ -154,7 +154,7 @@ join PS_DIM_BRAND pdb on pdp.ID_BRAND = pdb.ID_BRAND
 where pdb.ID_MANUFACTURER = ${idManufacturer}
 and pdp.PROMOTION_POSTMARK_DATE > dateadd(DAY, -30, current_timestamp)`);
 
-  toolService.registerAudit({
+  await toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'get Promotions by Manufacturer',
     eventType: 'READ',

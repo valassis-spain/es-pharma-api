@@ -29,7 +29,7 @@ pointOfSaleService.prototype.isUserPosLinked = async function(token, idUser, idP
     where pos.ID_POS = ${idPos}`);
 
     if (mappingPdv.length === 0) {
-      toolService.registerAudit({
+      await toolService.registerAudit({
         user_id: token.idUser,
         eventName: 'Read POS Not Found',
         eventType: 'READ',
@@ -43,7 +43,7 @@ pointOfSaleService.prototype.isUserPosLinked = async function(token, idUser, idP
       return {code: -2, message: 'Point of Sale not found'};
     }
 
-    toolService.registerAudit({
+    await toolService.registerAudit({
       user_id: idUser,
       eventName: 'Read User - Points of Sale',
       eventType: 'READ',
@@ -93,7 +93,7 @@ where up.REMOVED_AT is null
   and sup.REMOVED_AT is null
   and up.id_pos = ${idPos}`);
 
-  toolService.registerAudit({
+  await toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'get delegado linked to point of sale',
     eventType: 'READ',
@@ -112,7 +112,7 @@ join PS_DIM_BRAND pdb on pdp.ID_BRAND = pdb.ID_BRAND
          join PS_DIM_POINT_OF_SALE pos on pos.ID_POS = pdpp.ID_POS
 where pdpp.ID_PROMOTION = ${idPromotion}`);
 
-  toolService.registerAudit({
+  await toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'get point of sale by Promotion',
     eventType: 'READ',
@@ -203,7 +203,7 @@ ORDER BY ID_POS
 OFFSET (${pageNumber}-1)*${rowsOfPage} ROWS
 ${rowsOfPage > 0 ? `FETCH NEXT ${rowsOfPage} ROWS ONLY` : ''}`);
 
-  toolService.registerAudit({
+  await toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'get points of sale by delegado',
     eventType: 'READ',
@@ -218,7 +218,7 @@ ${rowsOfPage > 0 ? `FETCH NEXT ${rowsOfPage} ROWS ONLY` : ''}`);
 pointOfSaleService.prototype.updateLinkPointOfSaleToDelegado = async function(token, idDelegado, idPos) {
   const response = await mssqlDb.launchQuery('transaction', `update USER_POS set ID_USER=${idDelegado} where ID_POS = ${idPos};`);
 
-  toolService.registerAudit({
+  await toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'update link Point of Sale to Delegado',
     eventType: 'UPDATE',
@@ -234,7 +234,7 @@ pointOfSaleService.prototype.createLinkPointOfSaleToDelegado = async function(to
   const response = await mssqlDb.launchQuery('transaction', `insert into USER_POS (ID_USER, ID_POS, CREATED_AT, REMOVED_AT)
 values (${idDelegado},${idPos},current_timestamp,null);`);
 
-  toolService.registerAudit({
+  await toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'create link Point of Sale to Delegado',
     eventType: 'INSERT',
@@ -274,7 +274,7 @@ left join PS_DIM_MANUFACTURER_POS pdmp on pdmp.ID_POS = pos.ID_POS
 where pos.ID_POS = ${idPos}
 and pdmp.ID_MANUFACTURER = ${idManufacturer}`);
 
-  toolService.registerAudit({
+  await toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'get point of sale by ID',
     eventType: 'READ',
@@ -291,7 +291,7 @@ pointOfSaleService.prototype.createLinkPointOfSaleToPromotion = async function(t
  values 
  (${idPromotion}, ${idPos}, null, ${limit ? limit : 0}, null, null, null, null);`);
 
-  toolService.registerAudit({
+  await toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'link point of sale to Promotion',
     eventType: 'INSERT',
@@ -307,7 +307,7 @@ pointOfSaleService.prototype.updateLinkPointOfSaleToPromotion = async function(t
   const response = await mssqlDb.launchQuery('transaction', `update DIM_POS_PROMOTION set POS_LIMIT=${limit}
 where ID_PROMOTION=${idPromotion} and ID_POS=${idPos};`);
 
-  toolService.registerAudit({
+  await toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'link point of sale to Promotion',
     eventType: 'UPDATE',
@@ -415,7 +415,7 @@ from PS_DIM_POINT_OF_SALE pos
       group by pos.ID_POS, pdb.BRAND_NAME
   `);
 
-  toolService.registerAudit({
+  await toolService.registerAudit({
     user_id: token.idUser,
     eventName: 'Get Point of Sale Statistics',
     eventType: 'READ',

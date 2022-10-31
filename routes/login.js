@@ -47,7 +47,7 @@ router.post('/', async (req, res) => {
       resStatus = 403;
       logger.debug('No username or password received');
 
-      toolService.registerAudit({
+      await toolService.registerAudit({
         user_id: 52,
         eventName: 'login failed',
         eventType: 'READ',
@@ -65,7 +65,7 @@ router.post('/', async (req, res) => {
       resStatus = 403;
       logger.debug(`User not Found [${mappingUser.length} of ${username}]`);
 
-      toolService.registerAudit({
+      await toolService.registerAudit({
         user_id: 52,
         eventName: 'login failed',
         eventType: 'READ',
@@ -83,7 +83,7 @@ router.post('/', async (req, res) => {
       resStatus = 403;
       logger.debug(`Password not match [${username}]`);
 
-      toolService.registerAudit({
+      await toolService.registerAudit({
         user_id: mappingUser[0].idUser,
         eventName: 'login failed',
         eventType: 'READ',
@@ -100,7 +100,7 @@ router.post('/', async (req, res) => {
       resStatus = 403;
       logger.debug(`disabled user [${username}]`);
 
-      toolService.registerAudit({
+      await toolService.registerAudit({
         user_id: mappingUser[0].idUser,
         eventName: 'login failed',
         eventType: 'READ',
@@ -118,7 +118,7 @@ router.post('/', async (req, res) => {
     if (origin === process.env.ORIGIN_APP && !(isMemberOf.ROLE_USER || isMemberOf.ROLE_ADMIN)) {
       logger.debug(`User is not Pharma [${username}]`);
 
-      toolService.registerAudit({
+      await toolService.registerAudit({
         user_id: mappingUser[0].idUser,
         eventName: 'login failed',
         eventType: 'READ',
@@ -132,7 +132,7 @@ router.post('/', async (req, res) => {
       resStatus = 403;
       logger.debug(`User is not Delegado [${username}]`);
 
-      toolService.registerAudit({
+      await toolService.registerAudit({
         user_id: mappingUser[0].idUser,
         eventName: 'login failed',
         eventType: 'READ',
@@ -169,7 +169,7 @@ router.post('/', async (req, res) => {
     const verified = verifyToken(access_token);
     logger.debug(`JWT verification: ${JSON.stringify(verified)}`);
 
-    toolService.registerAudit({
+    await toolService.registerAudit({
       user_id: mappingUser[0].idUser,
       eventName: 'login success',
       eventType: 'READ',
@@ -264,7 +264,7 @@ async function sendEmailCode(mappingUser, email, res, origin, forget) {
   else {
     logger.error('Error sended register email');
 
-    toolService.registerAudit({
+    await toolService.registerAudit({
       user_id: mappingUser[0].idUser,
       eventName: 'error sending email code ',
       eventType: 'READ',
@@ -293,7 +293,7 @@ async function checkUserByEmail(email, res, origin) {
     if (!mappingUser || mappingUser.length !== 1) {
       logger.error(`Found ${mappingUser.length} of ${email}`);
 
-      toolService.registerAudit({
+      await toolService.registerAudit({
         user_id: 52,
         eventName: 'User by email error',
         eventType: 'READ',
@@ -313,7 +313,7 @@ async function checkUserByEmail(email, res, origin) {
     if (!mappingRoles || mappingRoles.length === 0) {
       logger.error(`Found ${mappingRoles.length} of ${email}`);
 
-      toolService.registerAudit({
+      await toolService.registerAudit({
         user_id: mappingUser[0].idUser,
         eventName: 'email receives hasn\'t roles',
         eventType: 'READ',
@@ -328,7 +328,7 @@ async function checkUserByEmail(email, res, origin) {
     else if (!mappingRoles.ROLE_DELEGADO && !mappingRoles.ROLE_SUPERVISOR) {
       logger.error(`Role not allowed ${email}`);
 
-      toolService.registerAudit({
+      await toolService.registerAudit({
         user_id: mappingUser[0].idUser,
         eventName: 'email receives hasn\'t correct role',
         eventType: 'READ',
@@ -519,7 +519,7 @@ router.get('/verifycode', async function(req, res, next) {
       logger.error(`${email} UUID received and UUID saved are different`);
       // res.status(403).json({message: 'Error: code not match'});
 
-      toolService.registerAudit({
+      await toolService.registerAudit({
         user_id: mappingUser[0].idUser,
         eventName: 'email code received not match',
         eventType: 'READ',
@@ -575,7 +575,7 @@ router.post('/setpwd', async function(req, res, next) {
     // if ( !errors && idUser !== mappingUser[0].idUser ) {
     //   logger.error(`${email} ID received and ID saved are different: ${idUser} <> ${mappingUser[0].idUser}`);
     //   res.status(403).json({message: 'Error: id not match'});
-    //   toolService.registerAudit({
+    //   await toolService.registerAudit({
     //     user_id: mappingUser[0].idUser,
     //     eventName: 'set PWD: ids not match',
     //     eventType: 'READ',
@@ -590,7 +590,7 @@ router.post('/setpwd', async function(req, res, next) {
       logger.error(`${email} UUID received and UUID saved are different`);
       // res.status(403).json({message: 'Error: code not match'});
 
-      toolService.registerAudit({
+      await toolService.registerAudit({
         user_id: mappingUser[0].idUser,
         eventName: 'email code received not match',
         eventType: 'READ',

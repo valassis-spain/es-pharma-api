@@ -32,7 +32,6 @@ var promotionRouter = require('./routes/promotionRoute');
 var userRouter = require('./routes/userRoute');
 var deviceRouter = require('./routes/deviceRoute');
 
-
 app.use('*', function(req, res, next) {
   logger.info(`Request URL: ${req.method} ${req.originalUrl}`);
   next();
@@ -44,75 +43,73 @@ app.use('/api/*', function(req, res, next) {
   next();
 });
 
-
 app.use('/api/deleg/*', function(req, res, next) {
   req.body.origin = process.env.ORIGIN_DELEGADO;
   next();
 });
 
 // do authentication
-app.use('/api/authenticate',  function(req, res, next) {
+app.use('/api/authenticate', function(req, res, next) {
   logger.debug('Router Login');
   next();
 }, loginRouter);
 
-app.use('/api/deleg/authenticate',   function(req, res, next) {
+app.use('/api/deleg/authenticate', function(req, res, next) {
   logger.debug('Router Login');
   next();
 }, loginRouter);
 
 // JSON Web Token functionalities
-app.use('/api/token',   function(req, res, next) {
+app.use('/api/token', function(req, res, next) {
   logger.debug('Router Token');
   next();
 }, tokenRouter);
 
 // global actions before any call
-app.use('/api/*',   function(req, res, next) {
+app.use('/api/*', function(req, res, next) {
   logger.debug('Router Index');
   next();
 }, indexRouter);
 
 // Delegado's functionalities
-app.use('/api/deleg/delegado',   function(req, res, next) {
+app.use('/api/deleg/delegado', function(req, res, next) {
   logger.debug('Router Delegado');
   next();
 }, delegadoRouter);
 
 // Point of sale's functionalities
-app.use('/api/deleg/pos',   function(req, res, next) {
+app.use('/api/deleg/pos', function(req, res, next) {
   logger.debug('Router PointOfSale');
   next();
 }, pointOfSaleRouter);
 
 // User's functionalities
-app.use('/api/user',   function(req, res, next) {
+app.use('/api/user', function(req, res, next) {
   logger.debug('Router User');
   next();
 }, userRouter);
 
-app.use('/api/deleg/user',   function(req, res, next) {
+app.use('/api/deleg/user', function(req, res, next) {
   logger.debug('Router User');
   next();
 }, userRouter);
 
 // Promotion's functionalities
-app.use('/api/promotions',   function(req, res, next) {
+app.use('/api/promotions', function(req, res, next) {
   logger.debug('Router Promotion');
   next();
 }, promotionRouter);
 
 // Device's functionalities
-app.use('/api/device',   function(req, res, next) {
+app.use('/api/device', function(req, res, next) {
   logger.debug('Router Device');
   next();
 }, deviceRouter);
 
 // swagger routes
-var options = {}
+var options = {};
 app.use('/api-docs-pharma', swaggerUi.serveFiles(swaggerPharmaDocument, options), swaggerUi.setup(swaggerPharmaDocument));
 app.use('/api-docs-representatives', swaggerUi.serveFiles(swaggerRepresentativesDocument, options), swaggerUi.setup(swaggerRepresentativesDocument));
-
 
 // app.use('/api/promotions', promotionsRouter);
 // app.use('/api/ticket', ticketRouter);
