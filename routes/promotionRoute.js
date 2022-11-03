@@ -23,11 +23,15 @@ router.get('/', async function(req, res, next) {
       filter
     });
 
+    logger.debug ( 'Response 200 OK');
+
     res.status(200).json(mappingPromotions.promotions);
   }
   catch (e) {
     logger.error(e.message);
     logger.error(e.stack);
+
+    logger.debug ( 'Response 500 KO');
 
     res.status(500).json({error: e.message});
   }
@@ -52,11 +56,15 @@ router.post('/:idPromotion', async function(req, res, next) {
       weekClosure
     });
 
+    logger.debug ( 'Response 200 OK');
+
     res.status(200).json(mappingPromotions);
   }
   catch (e) {
     logger.error(e.message);
     logger.error(e.stack);
+
+    logger.debug ( 'Response 500 KO');
 
     res.status(500).json({error: e.message});
   }
