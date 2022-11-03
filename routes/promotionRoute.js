@@ -23,7 +23,7 @@ router.get('/', async function(req, res, next) {
       filter
     });
 
-    logger.debug ( 'Response 200 OK');
+    logger.debug ( `Response 200 OK with ${mappingPromotions.promotions.length} records`);
 
     res.status(200).json(mappingPromotions.promotions);
   }
@@ -56,7 +56,7 @@ router.post('/:idPromotion', async function(req, res, next) {
       weekClosure
     });
 
-    logger.debug ( 'Response 200 OK');
+    logger.debug ( `Response 200 OK with ${mappingPromotions.length} records`);
 
     res.status(200).json(mappingPromotions);
   }
