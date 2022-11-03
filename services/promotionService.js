@@ -7,22 +7,23 @@ const promotionService = function() {
 };
 
 function promotionFormatForProductPromotion(mappingPromotions) {
-  for (const promotion of mappingPromotions.promotions) {
-    promotion.products = [];
-    promotion.products[0] = {};
-    promotion.products[0].id_product_promotion = promotion.id_product_promotion_a;
-    promotion.products[0].product_promotion_name = promotion.product_promotion_a_description;
-    delete promotion.id_product_promotion_a;
-    delete promotion.product_promotion_a_description;
+  if (mappingPromotions.promotions && mappingPromotions.promotions.length > 0)
+    for (const promotion of mappingPromotions.promotions) {
+      promotion.products = [];
+      promotion.products[0] = {};
+      promotion.products[0].id_product_promotion = promotion.id_product_promotion_a;
+      promotion.products[0].product_promotion_name = promotion.product_promotion_a_description;
+      delete promotion.id_product_promotion_a;
+      delete promotion.product_promotion_a_description;
 
-    if (promotion.id_product_promotion_b) {
-      promotion.products[1] = {};
-      promotion.products[1].id_product_promotion = promotion.id_product_promotion_b;
-      promotion.products[1].product_promotion_name = promotion.product_promotion_b_description;
-      delete promotion.id_product_promotion_b;
-      delete promotion.product_promotion_b_description;
+      if (promotion.id_product_promotion_b) {
+        promotion.products[1] = {};
+        promotion.products[1].id_product_promotion = promotion.id_product_promotion_b;
+        promotion.products[1].product_promotion_name = promotion.product_promotion_b_description;
+        delete promotion.id_product_promotion_b;
+        delete promotion.product_promotion_b_description;
+      }
     }
-  }
 }
 
 promotionService.prototype.getPromotionsByPosAndManufacturer = async function(token, idManufacturer, idPos) {
