@@ -6,6 +6,25 @@ const toolService = require('../services/toolService').create();
 const promotionService = function() {
 };
 
+function promotionFormatForProductPromotion(mappingPromotions) {
+  for (const promotion of mappingPromotions.promotions) {
+    promotion.products = [];
+    promotion.products[0] = {};
+    promotion.products[0].id_product_promotion = promotion.id_product_promotion_a;
+    promotion.products[0].product_promotion_name = promotion.product_promotion_a_description;
+    delete promotion.id_product_promotion_a;
+    delete promotion.product_promotion_a_description;
+
+    if (promotion.id_product_promotion_b) {
+      promotion.products[1] = {};
+      promotion.products[1].id_product_promotion = promotion.id_product_promotion_b;
+      promotion.products[1].product_promotion_name = promotion.product_promotion_b_description;
+      delete promotion.id_product_promotion_b;
+      delete promotion.product_promotion_b_description;
+    }
+  }
+}
+
 promotionService.prototype.getPromotionsByPosAndManufacturer = async function(token, idManufacturer, idPos) {
   const response = await mssqlDb.launchQuery('transaction', `select pdp.ID_PROMOTION
      , pdp.PROMOTION_NAME
@@ -45,6 +64,97 @@ Date.prototype.addDays = function(days) {
 
   return date;
 };
+
+async function getPromotionDetail(token, idPromotion, params) {
+
+  let query = 'select ' +
+    ' DateAdd(DAY,cast(substring(REF_LETTER,14,3) as integer),DateFromParts(1999+cast(substring(REF_LETTER,12,2) as integer),12,31)) creationDate,' +
+    ' pl.ID_POS_LETTER id, ' +
+    ' pl.ID_PROMOTION, ' +
+    '   pl.ID_POS, ' +
+    '   pl.ID_WEEK_CLOSURE, ' +
+    '   pl.TOTAL_PRIZES totalPrizes, ' +
+    '   pl.VALID_PRIZES validPrizes, ' +
+    '   pl.VALID_AMOUNT validAmount, ' +
+    '   pl.REF_LETTER refLetter, ' +
+    '   isnull(pl.CLAIMED_CUPONS,0) claimedCoupons, ' +
+    '   isnull(pl.CLAIMED_AMOUNT,0) claimedAmount, ' +
+    '   pl.INVALID_PRIZES invalidPrizes, ' +
+    '   pl.FAIL_COUPON failCoupon, ' +
+    '   pl.FAIL_PRODUCT failProduct, ' +
+    '   pl.FAIL_FORM failForm, ' +
+    '   pl.FAIL_POSTMARK failPostMark, ' +
+    '   pl.FAIL_TICKET_DATE failTicketDate, ' +
+    '   pl.FAIL_TICKET_ID failticketId, ' +
+    '   pl.FAIL_SALES_LIST failSalesList, ' +
+    '   pl.FAIL_PRIVATE_PROMOTION failPrivatePromotion, ' +
+    '   pl.LETTER_PAYMENTS letterPayments, ' +
+    '   py.PAYMENT_DATE, ' +
+    '   py.HONOR_DATE, ' +
+    '   pdwc.WEEK_CLOSURE_DATE ' +
+    ' from PS_FACT_PAYMENT py ' +
+    ' left join PS_FACT_POS_LETTER pl on py.ID_POS_LETTER = pl.ID_POS_LETTER ' +
+    ' left join PS_DIM_WEEKLY_CLOSURE pdwc on pl.ID_WEEK_CLOSURE = pdwc.ID_WEEK_CLOSURE ' +
+    'where pl.ID_POS = @idPos' +
+    '  and pl.ID_PROMOTION = @idPromotion;'
+
+  const queryParams = {};
+  queryParams.idPos = token.idPos;
+  queryParams.idPromotion = idPromotion;
+
+  if (params.weekClosure) {
+    query += ' and and pdwc.ID_WEEK_CLOSURE = @weekClosure'
+    queryParams.weekClosure = params.weekClosure;
+  }
+
+  const mappingPromotion = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
+
+  return mappingPromotion;
+
+}
+
+async function getPromotionResume(token, idPromotion, params) {
+  let query = 'select ' +
+    'data.ID_WEEK_CLOSURE as idWeekClosure, ' +
+    'data.WEEK_CLOSURE_DATE as weekClosureDate,' +
+    'sum(data.totalLetters)  totalLetters,' +
+    'sum(data.totalPrizes) totalPrizes,' +
+    'sum(data.validPrizes) validPrizes,' +
+    'sum(data.invalidPrizes) invalidPrizes,' +
+    'sum(data.validAmount) validAmount,' +
+    'sum(data.paidAmount)  paidAmount ' +
+    ' from (' +
+    '    SELECT ' +
+    ' pl.ID_WEEK_CLOSURE,wk.WEEK_CLOSURE_DATE,' +
+    ' totalPrizes = sum(pl.TOTAL_PRIZES),' +
+    ' validPrizes= sum(pl.VALID_PRIZES),' +
+    ' invalidPrizes=sum(pl.INVALID_PRIZES),' +
+    ' validAmount=sum(pl.VALID_AMOUNT),' +
+    ' totalLetters=count(distinct pl.ID_POS_LETTER),' +
+    ' paidAmount=(select sum(AMOUNT) from PS_FACT_PAYMENT py WHERE py.ID_POS_LETTER =pl.ID_POS_LETTER) ' +
+    ' FROM PS_FACT_POS_LETTER pl ' +
+    ' JOIN PS_DIM_WEEKLY_CLOSURE wk ' +
+    ' on pl.ID_WEEK_CLOSURE=wk.ID_WEEK_CLOSURE ' +
+    ' JOIN PS_FACT_PAYMENT  pay ' +
+    ' on pl.ID_POS_LETTER=pay.ID_POS_LETTER ' +
+    ' and pay.HONOR_DATE>=@since ' +
+    ' and pay.HONOR_DATE<=@until ' +
+    ' where pl.ID_POS = @idPos ' +
+    ' and pl.ID_PROMOTION = @idPromo ' +
+    ' GROUP BY pl.ID_WEEK_CLOSURE,wk.WEEK_CLOSURE_DATE,pl.ID_POS_LETTER ' +
+    ') data ' +
+    'group by data.WEEK_CLOSURE_DATE, data.ID_WEEK_CLOSURE';
+
+  const queryParams = {};
+  queryParams.since = params.since;
+  queryParams.until = params.until;
+  queryParams.idPos = token.idPos;
+  queryParams.idPromo = idPromotion;
+
+  const mappingPromotion = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
+
+  return mappingPromotion;
+}
 
 async function getPublicPromotions(token, params) {
   let query = 'select' +
@@ -229,22 +339,22 @@ async function getPrivatePromotions(token, params) {
 
 async function getSecretPromotions(token, params) {
   let query = ' select \'secret\' AS promoType,' +
-      'p.ID_PROMOTION,' +
-      'b.ID_BRAND,' +
-      'b.BRAND_NAME,' +
-      'm.MANUFACTURER_NAME, ' +
-      'CASE WHEN EXISTS (SELECT * FROM USER_PROMO_INFO_REQUEST u WHERE u.ID_POS = @idPos AND u.ID_PROMOTION=p.ID_PROMOTION )THEN \'TRUE\' ELSE \'FALSE\' END as USER_REQUEST ' +
-      'from PS_DIM_PROMOTION p ' +
-      'JOIN PS_DIM_BRAND b ' +
-      'on b.ID_BRAND = p.ID_BRAND ' +
-      'join PS_DIM_MANUFACTURER m ' +
-      'on m.ID_MANUFACTURER=b.ID_MANUFACTURER ' +
-      'join PS_DIM_POS_PROMOTION ppp on ppp.ID_PROMOTION=p.ID_PROMOTION and ppp.ID_POS!=@idPos ' +
-      'WHERE p.PROMOTION_POSTMARK_DATE >= @since ' +
-      'AND p.PROMOTION_START_DATE <= @until ' +
-      'AND p.PRIVATE_PROMOTION=1 ' +
-      'AND p.PROMOTION_APP=1 ' +
-      'group BY p.ID_PROMOTION,b.ID_BRAND,b.BRAND_NAME,m.MANUFACTURER_NAME';
+    'p.ID_PROMOTION,' +
+    'b.ID_BRAND,' +
+    'b.BRAND_NAME,' +
+    'm.MANUFACTURER_NAME, ' +
+    'CASE WHEN EXISTS (SELECT * FROM USER_PROMO_INFO_REQUEST u WHERE u.ID_POS = @idPos AND u.ID_PROMOTION=p.ID_PROMOTION )THEN \'TRUE\' ELSE \'FALSE\' END as USER_REQUEST ' +
+    'from PS_DIM_PROMOTION p ' +
+    'JOIN PS_DIM_BRAND b ' +
+    'on b.ID_BRAND = p.ID_BRAND ' +
+    'join PS_DIM_MANUFACTURER m ' +
+    'on m.ID_MANUFACTURER=b.ID_MANUFACTURER ' +
+    'join PS_DIM_POS_PROMOTION ppp on ppp.ID_PROMOTION=p.ID_PROMOTION and ppp.ID_POS!=@idPos ' +
+    'WHERE p.PROMOTION_POSTMARK_DATE >= @since ' +
+    'AND p.PROMOTION_START_DATE <= @until ' +
+    'AND p.PRIVATE_PROMOTION=1 ' +
+    'AND p.PROMOTION_APP=1 ' +
+    'group BY p.ID_PROMOTION,b.ID_BRAND,b.BRAND_NAME,m.MANUFACTURER_NAME';
 
   const queryParams = {};
   queryParams.since = params.since;
@@ -343,6 +453,34 @@ function processSinceUntilParams(params) {
   }
 }
 
+promotionService.prototype.pharmaPromotionInfo = async function(token, idPromotion, params) {
+  let response = {};
+  let activePromotions = [];
+
+  try {
+
+    if (params.resume) {
+      // if since param is not defined, it will be 180 before today
+      processSinceUntilParams(params);
+
+      // def closureCards = getPromoResume(claims, promotionId as long, pairSinceAndUntil)
+      response = await getPromotionResume(token, idPromotion, params);
+    }
+    else {
+      // def PaymentCards = getPromoDetails(claims, promotionId as long, weekClosure )
+      response = await getPromotionDetail(token, idPromotion, params);
+    }
+  }
+  catch (e) {
+    logger.error(e.message);
+    logger.error(e.stack);
+
+    response.error = e.message;
+  }
+
+  return response;
+};
+
 promotionService.prototype.pharmaPromotionList = async function(token, idPos, params) {
   const response = {};
   let activePromotions = [];
@@ -371,10 +509,14 @@ promotionService.prototype.pharmaPromotionList = async function(token, idPos, pa
       // Add Private Promotions
       const privatePromotions = await getPrivatePromotions(token, params);
 
-      for ( const promotion of privatePromotions) {
+      for (const promotion of privatePromotions) {
         activePromotions.push(promotion);
       }
     }
+
+    // build Product Promotions property when don't request secret promotions
+    if (params.filter !== 'secret')
+      promotionFormatForProductPromotion(activePromotions);
 
     response.promotions = activePromotions;
   }
