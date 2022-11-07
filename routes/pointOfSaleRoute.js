@@ -277,23 +277,23 @@ router.post('/promotioninfo', async function(req, res) {
 
           // if (dayWithData.date == paymentDate.toISOString().split('T')[0]) {
           if (dayWithData.date === payment.creationDate) {
-            dayWithData.valid_prizes = parseInt(payment.VALID_PRIZES);
-            dayWithData.invalid_prizes = parseInt(payment.INVALID_PRIZES);
-            dayWithData.FAIL_COUPON = payment.FAIL_COUPON;
-            dayWithData.FAIL_FORM = payment.FAIL_FORM;
-            dayWithData.FAIL_POSTMARK = payment.FAIL_POSTMARK;
-            dayWithData.FAIL_PRIVATE_PROMOTION = payment.FAIL_PRIVATE_PROMOTION;
-            dayWithData.FAIL_PRODUCT = payment.FAIL_PRODUCT;
-            dayWithData.FAIL_SALES_LIST = payment.FAIL_SALES_LIST;
-            dayWithData.FAIL_TICKET_DATE = payment.FAIL_TICKET_DATE;
-            dayWithData.FAIL_TICKET_ID = payment.FAIL_TICKET_ID;
+            dayWithData.valid_prizes = parseInt(payment.validPrizes);
+            dayWithData.invalid_prizes = parseInt(payment.invalidPrizes);
+            dayWithData.FAIL_COUPON = payment.failCoupon;
+            dayWithData.FAIL_FORM = payment.failForm;
+            dayWithData.FAIL_POSTMARK = payment.failPostMark;
+            dayWithData.FAIL_PRIVATE_PROMOTION = payment.failPrivatePromotion;
+            dayWithData.FAIL_PRODUCT = payment.failProduct;
+            dayWithData.FAIL_SALES_LIST = payment.failSalesList;
+            dayWithData.FAIL_TICKET_DATE = payment.failTicketDate;
+            dayWithData.FAIL_TICKET_ID = payment.failticketId;
 
-            if (payment.VALID_PRIZES === 0) {
+            if (payment.validPrizes === 0) {
               dayWithData.state = 'invalid';
             }
-            else if (payment.ID_ASSIGNED_PRIZE) {
+            else if (payment.PAYMENT_DATE) {
               dayWithData.state = 'closed';
-              dayWithData.amount = payment.AMOUNT;
+              dayWithData.amount = payment.validAmount;
 
               if (payment.HONOR_DATE)
                 dayWithData.paymentDate = payment.HONOR_DATE.toISOString().split('T')[0];
