@@ -127,7 +127,7 @@ router.post('/posPromotions', async function(req, res) {
   }
 });
 
-router.post('/linkPromotion', async function(req, res) {
+router.put('/linkPromotion', async function(req, res) {
   logger.info('Asociar Punto de Venta a Promocion');
 
   // const {origin} = req.body;
