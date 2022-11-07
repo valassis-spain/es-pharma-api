@@ -39,6 +39,7 @@ const logger = createLogger({
       level: process.env.LOG_LEVEL,
       handleExceptions: true,
       json: false,
+      prettyPrint: true,
       colorize: false
     })
   ],

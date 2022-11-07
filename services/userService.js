@@ -7,8 +7,14 @@ const userService = function() {
 };
 
 userService.prototype.updateUserWithCode = async function(token, idUser, uuid) {
-  const response = await mssqlDb.launchQuery('transaction', `update USERS set ENABLED=1, spassword='${uuid}' 
-where idUser=${idUser}`);
+  const query = `update USERS set ENABLED=1, spassword=@uuid 
+where idUser=@idUser`;
+
+  const queryParams = {};
+  queryParams.idUser = idUser;
+  queryParams.uuid = uuid;
+
+  const response = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
 
   if (token) {
     await toolService.registerAudit({
@@ -35,8 +41,13 @@ where idUser=${idUser}`);
 };
 
 userService.prototype.updateUserCodeVerified = async function(token, idUser, uuid) {
-  const response = await mssqlDb.launchQuery('transaction', `update USERS set account_Locked=0 
-where idUser=${idUser}`);
+  const query = `update USERS set account_Locked=0 
+where idUser=@idUser`;
+
+  const queryParams = {};
+  queryParams.idUser = idUser;
+
+  const response = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
 
   if (token) {
     await toolService.registerAudit({
@@ -63,8 +74,14 @@ where idUser=${idUser}`);
 };
 
 userService.prototype.updateUserPwd = async function(token, idUser, pwd) {
-  const response = await mssqlDb.launchQuery('transaction', `update USERS set sPassword='${pwd}' 
-where idUser=${idUser}`);
+  const query = `update USERS set sPassword=@pwd 
+where idUser=@idUser`;
+
+  const queryParams = {};
+  queryParams.idUser = idUser;
+  queryParams.pwd = pwd;
+
+  const response = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
 
   if (token) {
     await toolService.registerAudit({
@@ -91,7 +108,7 @@ where idUser=${idUser}`);
 };
 
 userService.prototype.getUserByUsername = async function(token, username, idPos) {
-  const response = await mssqlDb.launchQuery('transaction', `select 
+  const query =  `select 
 us.idUser, us.sUsername, us.sPassword, ${idPos ? `${idPos}  id_pos` : 'us.id_pos' }, us.enabled, us.account_Expired, us.account_Locked, us.password_Expired, pos.category, sup.id_supervisor,
 case
    when us.ENABLED = 0 and us.ACCOUNT_LOCKED = 1 and len(us.sPassword) > 36 then 1
@@ -106,10 +123,16 @@ case
                                 state,
 ud.NAME, ud.EMAIL, ud.PHONE                                 
 from users us 
-left join PS_DIM_POINT_OF_SALE pos on pos.id_pos = ${idPos ? idPos : 'us.id_pos' } 
+left join PS_DIM_POINT_OF_SALE pos on pos.id_pos = ${idPos ? '@idPos' : 'us.id_pos' } 
 left join USER_DETAIL ud on us.idUser = ud.ID_USER
 left join SUPERVISOR sup on sup.id_user = us.idUser
-where us.sUsername = '${username}'`);
+where us.sUsername = '${username}'`;
+
+  const queryParams = {};
+  queryParams.username = username;
+  queryParams.idPos = idPos;
+
+  const response = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
 
   if (token) {
     await toolService.registerAudit({
@@ -126,7 +149,7 @@ where us.sUsername = '${username}'`);
 };
 
 userService.prototype.getUserById = async function(token, idUser) {
-  const response = await mssqlDb.launchQuery('transaction', `select 
+  const query = `select 
 us.idUser, us.sUsername, us.id_pos, pos.category,
 case
    when us.ENABLED = 0 and us.ACCOUNT_LOCKED = 1 and len(us.sPassword) > 36 then 1
@@ -144,7 +167,12 @@ from users us
 left join PS_DIM_POINT_OF_SALE pos on pos.id_pos = us.id_pos 
 left join SUPERVISOR sup on sup.id_user = us.idUser
 left join user_detail ud on ud.id_user = us.idUser 
-where us.idUser=${idUser}`);
+where us.idUser=@idUser`;
+
+  const queryParams = {};
+  queryParams.idUser = idUser;
+
+  const response = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
 
   await toolService.registerAudit({
     user_id: token.idUser,
@@ -159,10 +187,15 @@ where us.idUser=${idUser}`);
 };
 
 userService.prototype.getUserDetailsById = async function(token, idUser) {
-  const response = await mssqlDb.launchQuery('transaction', `select 
+  const query = `select 
 id, id_user, name,email,phone,address,city,zip_code,state,country,removed_at 
 from  USER_DETAIL ud 
-where ud.id_user = ${idUser}`);
+where ud.id_user = @idUser`;
+
+  const queryParams = {};
+  queryParams.idUser = idUser;
+
+  const response = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
 
   await toolService.registerAudit({
     user_id: token.idUser,
@@ -177,8 +210,13 @@ where ud.id_user = ${idUser}`);
 };
 
 userService.prototype.disableUser = async function(token, idUser) {
-  const response = await mssqlDb.launchQuery('transaction', `update USERS set ENABLED=0, ACCOUNT_LOCKED=1 
-where idUser=${idUser}`);
+  const query = `update USERS set ENABLED=0, ACCOUNT_LOCKED=1 
+where idUser=@idUser`;
+
+  const queryParams = {};
+  queryParams.idUser = idUser;
+
+  const response = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
 
   await toolService.registerAudit({
     user_id: token.idUser,
@@ -193,8 +231,14 @@ where idUser=${idUser}`);
 };
 
 userService.prototype.logicalRemove = async function(token, idUser) {
-  const response = await mssqlDb.launchQuery('transaction', `update USER_DETAIL set REMOVED_AT=current_timestamp, REMOVED_BY=${token.idUser} 
-where ID_USER=${idUser}`);
+  const query = `update USER_DETAIL set REMOVED_AT=current_timestamp, REMOVED_BY=@tokenUser 
+where ID_USER=@idUser`;
+
+  const queryParams = {};
+  queryParams.idUser = idUser;
+  queryParams.tokenUser = token.idUser;
+
+  const response = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
 
   await toolService.registerAudit({
     user_id: token.idUser,
@@ -209,17 +253,30 @@ where ID_USER=${idUser}`);
 };
 
 userService.prototype.createUserDetails = async function(token, idDelegado, values = {}) {
-  const response = await mssqlDb.launchQuery('transaction', `insert into USER_DETAIL (ID_USER, NAME, EMAIL, PHONE, ADDRESS, CITY, ZIP_CODE, STATE, COUNTRY, CREATED_AT)
-values (${idDelegado},
-'${values.name}',
-'${values.email}',
-'${values.phone}',
-'${values.address}',
-'${values.city}',
-${values.zipCode ? values.zipCode : 0},
-'${values.state}',
-'${values.country ? values.country : 'es'}',
-current_timestamp)`);
+  const query = `insert into USER_DETAIL (ID_USER, NAME, EMAIL, PHONE, ADDRESS, CITY, ZIP_CODE, STATE, COUNTRY, CREATED_AT)
+values (@idDelegado,
+@name,
+@email,
+@phone,
+@address,
+@city,
+@zipCode,
+@state,
+@country,
+current_timestamp)`;
+
+  const queryParams = {};
+  queryParams.idDelegado = idDelegado;
+  queryParams.name = values.name;
+  queryParams.email = values.email;
+  queryParams.phone = values.phone;
+  queryParams.address = values.address;
+  queryParams.city = values.city;
+  queryParams.zipCode = ( values.zipCode ? values.zipCode : 0 );
+  queryParams.state = values.state;
+  queryParams.country = ( values.country ? values.country : 'es');
+
+  const response = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
 
   await toolService.registerAudit({
     user_id: token.idUser,
@@ -234,16 +291,30 @@ current_timestamp)`);
 };
 
 userService.prototype.updateUserDetails = async function(token, idDelegado, values = {}) {
-  const response = await mssqlDb.launchQuery('transaction', `update USER_DETAIL set 
-${values.name ? 'NAME=\'' + values.name + '\',' : ''}
-${values.phone ? 'PHONE=\'' + values.phone + '\',' : ''}
-${values.address ? 'ADDRESS=\'' + values.address + '\',' : ''}
-${values.city ? 'CITY=\'' + values.city + '\',' : ''}
-${values.zipCode ? 'ZIP_CODE=\'' + values.zipCode + '\',' : ''}
-${values.state ? 'STATE=\'' + values.state + '\',' : ''}
-${values.country ? 'COUNTRY=\'' + values.country + '\',' : ''}
-UPDATED_AT=current_timestamp, UPDATED_BY=${token.idUser} 
-where ID_USER=${idDelegado}`);
+  const query = `update USER_DETAIL set 
+${values.name ? 'NAME=@name,' : ''}
+${values.phone ? 'PHONE=@phone,' : ''}
+${values.address ? 'ADDRESS=@address,' : ''}
+${values.city ? 'CITY=@city,' : ''}
+${values.zipCode ? 'ZIP_CODE=@zipCode,' : ''}
+${values.state ? 'STATE=@state,' : ''}
+${values.country ? 'COUNTRY=@country,' : ''}
+UPDATED_AT=current_timestamp, UPDATED_BY=@tokenUser 
+where ID_USER=@idDelegado`;
+
+  const queryParams = {};
+  queryParams.idDelegado = idDelegado;
+  queryParams.tokenUser = token.idUser;
+  queryParams.name = values.name;
+  queryParams.email = values.email;
+  queryParams.phone = values.phone;
+  queryParams.address = values.address;
+  queryParams.city = values.city;
+  queryParams.zipCode = ( values.zipCode ? values.zipCode : 0 );
+  queryParams.state = values.state;
+  queryParams.country = ( values.country ? values.country : 'es');
+
+  const response = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
 
   await toolService.registerAudit({
     user_id: token.idUser,
@@ -259,11 +330,16 @@ where ID_USER=${idDelegado}`);
 
 userService.prototype.memberOf = async function(token, origin, username) {
   // get user groups
-  const mappingGroups = await mssqlDb.launchQuery('transaction', `select g.sGroupCode rol
+  const query = `select g.sGroupCode rol
 from users us
     left join USER_GROUPS ug on us.idUser = ug.idUser
     left join GROUPS g on ug.idGroup = g.idGroup
-where us.sUsername = '${username}'`);
+where us.sUsername = @username`;
+
+  const queryParams = {};
+  queryParams.username = username;
+
+  const mappingGroups = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
 
   if (token) {
     await toolService.registerAudit({

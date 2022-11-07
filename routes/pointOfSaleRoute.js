@@ -260,7 +260,7 @@ router.post('/promotioninfo', async function(req, res) {
     }
 
     if (!errors) {
-      let posLetterInfo = await promotionService.getInfoPromotion(token, idManufacturer, idPos, idPromotion);
+      let posLetterInfo = await promotionService.pharmaPromotionInfo(token, idPromotion, {idPos, idManufacturer});
 
       if (!posLetterInfo) {
         // this point of sale don't have letters
@@ -275,7 +275,8 @@ router.post('/promotioninfo', async function(req, res) {
           const paymentDate = new Date(2000 + parseInt(payment.year), 0, 1);
           paymentDate.setDate(paymentDate.getDate() + parseInt(payment.dayofyear));
 
-          if (dayWithData.date == paymentDate.toISOString().split('T')[0]) {
+          // if (dayWithData.date == paymentDate.toISOString().split('T')[0]) {
+          if (dayWithData.date === payment.creationDate) {
             dayWithData.valid_prizes = parseInt(payment.VALID_PRIZES);
             dayWithData.invalid_prizes = parseInt(payment.INVALID_PRIZES);
             dayWithData.FAIL_COUPON = payment.FAIL_COUPON;
@@ -304,7 +305,8 @@ router.post('/promotioninfo', async function(req, res) {
             break;
           }
 
-          logger.debug(`${dayWithData.date} con ${paymentDate.toISOString().split('T')[0]}`);
+          // logger.debug(`${dayWithData.date} con ${paymentDate.toISOString().split('T')[0]}`);
+          logger.debug(`${dayWithData.date} con ${payment.creationDate}`);
         } // end for each payment
       } // end for each day with submissions
     }

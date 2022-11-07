@@ -7,7 +7,7 @@ const promotionService = function() {
 };
 
 function promotionFormatForProductPromotion(mappingPromotions) {
-  if (mappingPromotions.promotions && mappingPromotions.promotions.length > 0)
+  if (mappingPromotions.promotions && mappingPromotions.promotions.length > 0) {
     for (const promotion of mappingPromotions.promotions) {
       promotion.products = [];
       promotion.products[0] = {};
@@ -24,10 +24,11 @@ function promotionFormatForProductPromotion(mappingPromotions) {
         delete promotion.product_promotion_b_description;
       }
     }
+  }
 }
 
 promotionService.prototype.getPromotionsByPosAndManufacturer = async function(token, idManufacturer, idPos) {
-  const response = await mssqlDb.launchQuery('transaction', `select pdp.ID_PROMOTION
+  const query = `select pdp.ID_PROMOTION
      , pdp.PROMOTION_NAME
      , pdp.PROMOTION_REFERENCE
      , replace(convert(varchar(10),pdp.PROMOTION_END_DATE,111),'/','-') PROMOTION_END_DATE
@@ -35,17 +36,23 @@ promotionService.prototype.getPromotionsByPosAndManufacturer = async function(to
      , replace(convert(varchar(10),pdp.PROMOTION_POSTMARK_DATE,111),'/','-') PROMOTION_POSTMARK_DATE
      , (select pdpp.ID_POS
         from PS_DIM_POS_PROMOTION pdpp
-        where pdpp.ID_PROMOTION = pdp.ID_PROMOTION and pdpp.ID_POS = ${idPos}) id_pos
+        where pdpp.ID_PROMOTION = pdp.ID_PROMOTION and pdpp.ID_POS = @idPos) id_pos
      , (select pdpp.POS_LIMIT
         from PS_DIM_POS_PROMOTION pdpp
-        where pdpp.ID_PROMOTION = pdp.ID_PROMOTION and pdpp.ID_POS = ${idPos}) limit        
+        where pdpp.ID_PROMOTION = pdp.ID_PROMOTION and pdpp.ID_POS = @idPos) limit        
       , ( select count(*)
         from PS_FACT_POS_LETTER pl
-        where pl.ID_POS = ${idPos} and pl.ID_PROMOTION = pdp.ID_PROMOTION) letters
+        where pl.ID_POS = @idPos and pl.ID_PROMOTION = pdp.ID_PROMOTION) letters
 from PS_DIM_PROMOTION pdp
          left join PS_DIM_BRAND pdb on pdp.ID_BRAND = pdb.ID_BRAND
-where pdb.ID_MANUFACTURER = ${idManufacturer}
-  and pdp.PROMOTION_POSTMARK_DATE > dateadd(DAY, -30, current_timestamp)`);
+where pdb.ID_MANUFACTURER = @idManufacturer
+  and pdp.PROMOTION_POSTMARK_DATE > dateadd(DAY, -30, current_timestamp)`;
+
+  const queryParams = {};
+  queryParams.idManufacturer = idManufacturer;
+  queryParams.idPos = idPos;
+
+  const response = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
 
   await toolService.registerAudit({
     user_id: token.idUser,
@@ -67,7 +74,6 @@ Date.prototype.addDays = function(days) {
 };
 
 async function getPromotionDetail(token, idPromotion, params) {
-
   let query = 'select ' +
     ' DateAdd(DAY,cast(substring(REF_LETTER,14,3) as integer),DateFromParts(1999+cast(substring(REF_LETTER,12,2) as integer),12,31)) creationDate,' +
     ' pl.ID_POS_LETTER id, ' +
@@ -97,25 +103,27 @@ async function getPromotionDetail(token, idPromotion, params) {
     ' left join PS_FACT_POS_LETTER pl on py.ID_POS_LETTER = pl.ID_POS_LETTER ' +
     ' left join PS_DIM_WEEKLY_CLOSURE pdwc on pl.ID_WEEK_CLOSURE = pdwc.ID_WEEK_CLOSURE ' +
     'where pl.ID_POS = @idPos' +
-    '  and pl.ID_PROMOTION = @idPromotion;'
+    '  and pl.ID_PROMOTION = @idPromotion;';
 
   const queryParams = {};
-  queryParams.idPos = token.idPos;
+
+  if (params.idPos) queryParams.idPos = params.idPos;
+  else queryParams.idPos = token.idPos;
+
   queryParams.idPromotion = idPromotion;
 
   if (params.weekClosure) {
-    query += ' and and pdwc.ID_WEEK_CLOSURE = @weekClosure'
+    query += ' and and pdwc.ID_WEEK_CLOSURE = @weekClosure';
     queryParams.weekClosure = params.weekClosure;
   }
 
   const mappingPromotion = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
 
   return mappingPromotion;
-
 }
 
 async function getPromotionResume(token, idPromotion, params) {
-  let query = 'select ' +
+  const query = 'select ' +
     'data.ID_WEEK_CLOSURE as idWeekClosure, ' +
     'data.WEEK_CLOSURE_DATE as weekClosureDate,' +
     'sum(data.totalLetters)  totalLetters,' +
@@ -339,7 +347,7 @@ async function getPrivatePromotions(token, params) {
 }
 
 async function getSecretPromotions(token, params) {
-  let query = ' select \'secret\' AS promoType,' +
+  const query = ' select \'secret\' AS promoType,' +
     'p.ID_PROMOTION,' +
     'b.ID_BRAND,' +
     'b.BRAND_NAME,' +
@@ -456,10 +464,8 @@ function processSinceUntilParams(params) {
 
 promotionService.prototype.pharmaPromotionInfo = async function(token, idPromotion, params) {
   let response = {};
-  let activePromotions = [];
 
   try {
-
     if (params.resume) {
       // if since param is not defined, it will be 180 before today
       processSinceUntilParams(params);
@@ -510,9 +516,8 @@ promotionService.prototype.pharmaPromotionList = async function(token, idPos, pa
       // Add Private Promotions
       const privatePromotions = await getPrivatePromotions(token, params);
 
-      for (const promotion of privatePromotions) {
+      for (const promotion of privatePromotions)
         activePromotions.push(promotion);
-      }
     }
 
     // build Product Promotions property when don't request secret promotions

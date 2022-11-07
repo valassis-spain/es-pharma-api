@@ -7,9 +7,14 @@ const delegadoService = function() {
 };
 
 delegadoService.prototype.getMySupervisor = async function(token, idDelegado) {
-  const response = await mssqlDb.launchQuery('transaction', `select ud.id_user,ud.name,ud.email,ud.phone,ud.removed_at from SUPERVISOR sup
+  const query = `select ud.id_user,ud.name,ud.email,ud.phone,ud.removed_at from SUPERVISOR sup
 left join user_detail ud on ud.id_user = sup.id_supervisor 
-where sup.id_user = ${idDelegado}`);
+where sup.id_user = @idDelegado`;
+
+  const queryParams = {};
+  queryParams.idDelegado = idDelegado;
+
+  const response = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
 
   await toolService.registerAudit({
     user_id: token.idUser,
@@ -30,7 +35,7 @@ state = 3 --> user did email verification
 state = 4 --> user set his own password
  */
 delegadoService.prototype.getMyDelegs = async function(token, idManufacturer, idSupervisor) {
-  const response = await mssqlDb.launchQuery('transaction', `select us.idUser,
+  const query = `select us.idUser,
        us.sUsername,
        us.enabled,
        us.ACCOUNT_LOCKED,
@@ -52,19 +57,25 @@ delegadoService.prototype.getMyDelegs = async function(token, idManufacturer, id
                                         state,
        (select count(distinct up.id_pos)
         from user_pos up
-                 join PS_DIM_MANUFACTURER_POS pdm on pdm.ID_MANUFACTURER = ${idManufacturer}
+                 join PS_DIM_MANUFACTURER_POS pdm on pdm.ID_MANUFACTURER = @idManufacturer
                  join PS_DIM_BRAND pdb on pdb.ID_MANUFACTURER = pdm.ID_MANUFACTURER
                  join PS_DIM_PROMOTION pdp on pdb.ID_BRAND = pdp.ID_BRAND
                  join PS_DIM_POS_PROMOTION pdpp on pdpp.ID_PROMOTION = pdp.ID_PROMOTION and pdpp.ID_POS = up.ID_POS
         where up.ID_USER = sup.ID_USER) pos_linked_with_promo,
        (select count(distinct up.id_pos)
         from user_pos up
-                 join PS_DIM_MANUFACTURER_POS pdb on pdb.ID_MANUFACTURER = ${idManufacturer}
+                 join PS_DIM_MANUFACTURER_POS pdb on pdb.ID_MANUFACTURER = @idManufacturer
         where up.ID_USER = sup.ID_USER) pos_linked
 from SUPERVISOR sup
          left join users us on sup.ID_USER = us.idUser
          left join user_detail ud on ud.id_user = us.idUser
-where sup.id_supervisor = ${idSupervisor}`);
+where sup.id_supervisor = @idSupervisor`;
+
+  const queryParams = {};
+  queryParams.idSupervisor = idSupervisor;
+  queryParams.idManufacturer = idManufacturer;
+
+  const response = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
 
   await toolService.registerAudit({
     user_id: token.idUser,
@@ -79,7 +90,7 @@ where sup.id_supervisor = ${idSupervisor}`);
 };
 
 delegadoService.prototype.getDelegadoByPos = async function(token, idManufacturer, idPos) {
-  const response = await mssqlDb.launchQuery('transaction', `select us.idUser,
+  const query =`select us.idUser,
        us.sUsername,
        us.enabled,
        us.ACCOUNT_LOCKED,
@@ -104,9 +115,15 @@ join users us on up.ID_USER = us.idUser
 join USER_GROUPS ug on us.idUser = ug.idUser
 join USER_DETAIL ud on us.idUser = ud.ID_USER
 join SUPERVISOR sup on us.idUser = sup.ID_USER
-where up.ID_POS = ${idPos}
-  and sup.id_manufacturer = ${idManufacturer}
-and ug.idGroup in (4,5)`);
+where up.ID_POS = @idPos
+  and sup.id_manufacturer = @idManufacturer
+and ug.idGroup in (4,5)`;
+
+  const queryParams = {};
+  queryParams.idManufacturer = idManufacturer;
+  queryParams.idPos = idPos;
+
+  const response = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
 
   await toolService.registerAudit({
     user_id: token.idUser,
@@ -121,11 +138,16 @@ and ug.idGroup in (4,5)`);
 };
 
 delegadoService.prototype.getMyManufacturers = async function(token, idDelegado) {
-  const response = await mssqlDb.launchQuery('transaction', `select pdm.ID_MANUFACTURER, pdm.MANUFACTURER_NAME 
+  const query = `select pdm.ID_MANUFACTURER, pdm.MANUFACTURER_NAME 
 from SUPERVISOR sup
 join PS_DIM_MANUFACTURER pdm on sup.ID_MANUFACTURER = pdm.ID_MANUFACTURER 
-where sup.id_supervisor = ${idDelegado}
-group by pdm.ID_MANUFACTURER, pdm.MANUFACTURER_NAME`);
+where sup.id_supervisor = @idDelegado
+group by pdm.ID_MANUFACTURER, pdm.MANUFACTURER_NAME`;
+
+  const queryParams = {};
+  queryParams.idDelegado = idDelegado;
+
+  const response = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
 
   await toolService.registerAudit({
     user_id: token.idUser,
@@ -140,7 +162,7 @@ group by pdm.ID_MANUFACTURER, pdm.MANUFACTURER_NAME`);
 };
 
 delegadoService.prototype.getMyPromotions = async function(token, idManufacturer) {
-  const response = await mssqlDb.launchQuery('transaction', `select 
+  const query = `select 
     pdp.ID_PROMOTION, 
     pdp.PROMOTION_NAME, 
     pdp.PROMOTION_REFERENCE, 
@@ -151,8 +173,13 @@ delegadoService.prototype.getMyPromotions = async function(token, idManufacturer
 from PS_DIM_PROMOTION pdp
 join PS_DIM_BRAND pdb on pdp.ID_BRAND = pdb.ID_BRAND
          join PS_DIM_MANUFACTURER pdm on pdb.ID_MANUFACTURER = pdm.ID_MANUFACTURER
-where pdb.ID_MANUFACTURER = ${idManufacturer}
-and pdp.PROMOTION_POSTMARK_DATE > dateadd(DAY, -30, current_timestamp)`);
+where pdb.ID_MANUFACTURER = @idManufacturer
+and pdp.PROMOTION_POSTMARK_DATE > dateadd(DAY, -30, current_timestamp)`;
+
+  const queryParams = {};
+  queryParams.idManufacturer = idManufacturer;
+
+  const response = await mssqlDb.launchPreparedQuery('transaction', query, queryParams);
 
   await toolService.registerAudit({
     user_id: token.idUser,

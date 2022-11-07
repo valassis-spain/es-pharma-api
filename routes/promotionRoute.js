@@ -10,7 +10,7 @@ router.get('/', async function(req, res, next) {
   logger.debug('GET Promotions');
 
   // const {origin} = req.body;
-  const {since=null, until=null, filter=''} = req.query;
+  const {since = null, until = null, filter = ''} = req.query;
   const token = req.pharmaApiAccessToken;
 
   logger.debug(`POST: ${JSON.stringify(req.body)}`);
@@ -23,7 +23,7 @@ router.get('/', async function(req, res, next) {
       filter
     });
 
-    logger.debug ( `Response 200 OK with ${mappingPromotions.promotions.length} records`);
+    logger.info(`Response 200 OK with ${mappingPromotions.promotions.length} records`);
 
     res.status(200).json(mappingPromotions.promotions);
   }
@@ -31,7 +31,7 @@ router.get('/', async function(req, res, next) {
     logger.error(e.message);
     logger.error(e.stack);
 
-    logger.debug ( 'Response 500 KO');
+    logger.info(`Response 500 KO because ${e.message}`);
 
     res.status(500).json({error: e.message});
   }
@@ -42,7 +42,7 @@ router.post('/:idPromotion', async function(req, res, next) {
 
   // const {origin} = req.body;
   const {idPromotion} = req.params;
-  const {since=null, until=null, resume='', weekClosure=''} = req.body;
+  const {since = null, until = null, resume = '', weekClosure = ''} = req.body;
   const token = req.pharmaApiAccessToken;
 
   logger.debug(`POST: ${JSON.stringify(req.body)}`);
@@ -56,7 +56,7 @@ router.post('/:idPromotion', async function(req, res, next) {
       weekClosure
     });
 
-    logger.debug ( `Response 200 OK with ${mappingPromotions.length} records`);
+    logger.info(`Response 200 OK with ${mappingPromotions.length} records`);
 
     res.status(200).json(mappingPromotions);
   }
@@ -64,7 +64,7 @@ router.post('/:idPromotion', async function(req, res, next) {
     logger.error(e.message);
     logger.error(e.stack);
 
-    logger.debug ( 'Response 500 KO');
+    logger.info(`Response 500 KO because ${e.message}`);
 
     res.status(500).json({error: e.message});
   }
