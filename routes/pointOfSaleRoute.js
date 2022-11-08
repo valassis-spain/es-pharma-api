@@ -6,6 +6,7 @@ const pointOfSaleService = require('../services/pointOfSaleService').create();
 const promotionService = require('../services/promotionService').create();
 const delegadoService = require('../services/delegadoService').create();
 const bridgeService = require('../services/bridgeService').create();
+const geocodeService = require('../lib/geocode')
 
 // const {verifyAccesToken} = require('../lib/jwt');
 const {issueAccessToken} = require('../lib/jwt');
@@ -75,9 +76,9 @@ router.post('/posInfo', async function(req, res) {
   let errors;
 
   try {
-    const mappginPos = await pointOfSaleService.getPointOfSaleDetails(token, idManufacturer, idPos);
+    const mappingPos = await pointOfSaleService.getPointOfSaleDetails(token, idManufacturer, idPos);
 
-    if (mappginPos.length === 0) {
+    if (mappingPos.length === 0) {
       errors = true;
       res.status(404).json({error: 'Point of Sale not found.'});
     }
@@ -87,12 +88,15 @@ router.post('/posInfo', async function(req, res) {
 
       const mappingDelegado = await delegadoService.getDelegadoByPos(token, idManufacturer, idPos);
 
-      mappginPos[0].promotions = mappingPromotions;
-      mappginPos[0].delegado = mappingDelegado;
+      const mappingLocation = await geocodeService.FindByKeyWord(mappingPos[0].MAIN_STREET+','+mappingPos[0].MAIN_ZIP_CODE+','+mappingPos[0].MAIN_CITY+','+mappingPos[0].MAIN_STATE);
+
+      mappingPos[0].promotions = mappingPromotions;
+      mappingPos[0].delegado = mappingDelegado;
+      mappingPos[0].location = mappingLocation;
 
       logger.info('end pos details');
 
-      res.status(200).json({pointOfSale: mappginPos[0], accessToken: issueAccessToken(token)});
+      res.status(200).json({pointOfSale: mappingPos[0], accessToken: issueAccessToken(token)});
     }
   }
   catch (e) {
