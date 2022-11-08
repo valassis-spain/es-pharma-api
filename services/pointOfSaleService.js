@@ -428,18 +428,18 @@ where pdm.ID_MANUFACTURER = @idManufacturer;`;
 
   const query4 = `
 select 
-             cast(avg(data.reimboursement) as decimal(10, 2))         avg_amount_by_promo,
-             cast(avg(data.total_prizes) as decimal(10, 2))           avg_total_prizes_by_promo,
-             cast(avg(data.valid_prizes) as decimal(10, 2))           avg_valid_prizes_by_promo,
-             cast(avg(data.invalid_prizes) as decimal(10, 2))         avg_invalid_prizes_by_promo,
-             cast(avg(data.pct_valid_prizes) as decimal(10,2))       pct_valid_prizes,
-             cast(avg(data.pct_invalid_prizes)  as decimal(10,2))         pct_invalid_prizes,
-             cast(avg(data.pct_FAIL_TICKET_DATE) as decimal(10,2))       pct_FAIL_TICKET_DATE,
-             cast(avg(data.pct_FAIL_POSTMARK)  as decimal(10,2))         pct_FAIL_POSTMARK,
-             cast(avg(data.pct_FAIL_PRODUCT)  as decimal(10,2))          pct_FAIL_PRODUCT,
-             cast(avg(data.pct_FAIL_TICKET_ID)  as decimal(10,2))        pct_FAIL_TICKET_ID,
-             cast(avg(data.pct_FAIL_PRIVATE_PROMOTION) as decimal(10,2)) pct_FAIL_PRIVATE_PROMOTION,
-             cast(avg(data.amount_by_prizes) as decimal(10, 2))       avg_amount_by_prize_and_promo
+cast(avg(data.reimboursement) as decimal(10, 2))         avg_amount_by_promo,
+cast(avg(data.total_prizes) as decimal(10, 2))           avg_total_prizes_by_promo,
+cast(avg(data.valid_prizes) as decimal(10, 2))           avg_valid_prizes_by_promo,
+cast(avg(data.invalid_prizes) as decimal(10, 2))         avg_invalid_prizes_by_promo,
+cast(avg(data.pct_valid_prizes) as decimal(10,2))       pct_valid_prizes,
+cast(avg(data.pct_invalid_prizes)  as decimal(10,2))         pct_invalid_prizes,
+cast(avg(data.pct_FAIL_TICKET_DATE) as decimal(10,2))       pct_FAIL_TICKET_DATE,
+cast(avg(data.pct_FAIL_POSTMARK)  as decimal(10,2))         pct_FAIL_POSTMARK,
+cast(avg(data.pct_FAIL_PRODUCT)  as decimal(10,2))          pct_FAIL_PRODUCT,
+cast(avg(data.pct_FAIL_TICKET_ID)  as decimal(10,2))        pct_FAIL_TICKET_ID,
+cast(avg(data.pct_FAIL_PRIVATE_PROMOTION) as decimal(10,2)) pct_FAIL_PRIVATE_PROMOTION,
+cast(avg(data.amount_by_prizes) as decimal(10, 2))       avg_amount_by_prize_and_promo
 from (select pos.ID_POS,
 pdp.PROMOTION_REFERENCE,
                    sum(pfp.AMOUNT) + sum(pfp.BONIFICATION)                          reimboursement,
