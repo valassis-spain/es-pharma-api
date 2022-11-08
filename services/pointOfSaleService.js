@@ -150,16 +150,22 @@ pointOfSaleService.prototype.getListPointOfSaleByDelegado = async function(token
   queryParams.idManufacturer = filter.idManufacturer;
 
   if (filter.quicksearch) {
-    filter2apply += ` and ( pos.CIF like '%@quicksearch%' 
-    or pos.main_zip_code like '%@quicksearch%'
-    or pos.name like '%@quicksearch%'
-    or pos.email like '%@quicksearch%'
-    or pos.phone like '%@quicksearch%'
-    or pos.contact_person like '%@quicksearch%'
-    or pos.main_city like '%@quicksearch%'
-    or pos.main_state like '%@quicksearch%'
+    filter.quicksearch = filter.quicksearch
+      .replace("!", "!!")
+      .replace("%", "!%")
+      .replace("_", "!_")
+      .replace("[", "![");
+
+    filter2apply += ` and ( pos.CIF like '%${filter.quicksearch}%' 
+    or pos.main_zip_code like '%${filter.quicksearch}%'
+    or pos.name like '%${filter.quicksearch}%'
+    or pos.email like '%${filter.quicksearch}%'
+    or pos.phone like '%${filter.quicksearch}%'
+    or pos.contact_person like '%${filter.quicksearch}%'
+    or pos.main_city like '%${filter.quicksearch}%'
+    or pos.main_state like '%${filter.quicksearch}%'
     )`;
-    queryParams.quicksearch = filter.quicksearch;
+    // queryParams.quicksearch = filter.quicksearch;
   }
 
   if (filter.idPos) {
