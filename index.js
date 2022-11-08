@@ -34,6 +34,8 @@ var deviceRouter = require('./routes/deviceRoute');
 
 app.use('*', function(req, res, next) {
   logger.info(`Request URL: ${req.method} ${req.originalUrl}`);
+  logger.debug(`Request GET PARAMS: ${req.query}`);
+  logger.debug(`Request POST PARAMS: ${req.body}`);
   next();
 });
 
